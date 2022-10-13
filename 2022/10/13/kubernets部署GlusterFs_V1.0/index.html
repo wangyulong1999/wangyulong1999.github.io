@@ -1,0 +1,757 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Mr.wang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="部署GlusterFs持久存储部署glusterfs修改&#x2F;etc&#x2F;hosts 1234567891011[root@k8s-master01 amd64]# cat &#x2F;etc&#x2F;hosts127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4::1         localho">
+<meta property="og:type" content="article">
+<meta property="og:title" content="部署GlusterFS持久存储">
+<meta property="og:url" content="http://example.com/2022/10/13/kubernets%E9%83%A8%E7%BD%B2GlusterFs_V1.0/index.html">
+<meta property="og:site_name" content="Mr.wang">
+<meta property="og:description" content="部署GlusterFs持久存储部署glusterfs修改&#x2F;etc&#x2F;hosts 1234567891011[root@k8s-master01 amd64]# cat &#x2F;etc&#x2F;hosts127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4::1         localho">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-13T01:24:42.116Z">
+<meta property="article:modified_time" content="2022-10-13T01:25:33.000Z">
+<meta property="article:author" content="Mr.wang">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>部署GlusterFS持久存储 - Mr.wang</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/shubiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/toubudaziji.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/gundongtiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/shubiao.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="部署GlusterFS持久存储"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-10-13 09:24" pubdate>
+          2022年10月13日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          104 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">部署GlusterFS持久存储</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="部署GlusterFs持久存储"><a href="#部署GlusterFs持久存储" class="headerlink" title="部署GlusterFs持久存储"></a>部署GlusterFs持久存储</h1><h2 id="部署glusterfs"><a href="#部署glusterfs" class="headerlink" title="部署glusterfs"></a>部署glusterfs</h2><p>修改&#x2F;etc&#x2F;hosts</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@k8s-master01 amd64]<span class="hljs-comment"># cat /etc/hosts</span><br>127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4<br>::1         localhost localhost.localdomain localhost6 localhost6.localdomain6<br><br>192.168.100.129 k8s-master01<br>192.168.100.138 k8s-master02<br>192.168.100.139 k8s-master03<br>192.168.100.140 k8s-node01  gfs1<br>192.168.100.141 k8s-node02  gfs2<br>192.168.100.142 k8s-node03  gfs3<br><br></code></pre></td></tr></table></figure>
+
+<p>安装yum源（每台机器执行）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@k8s-master01~]<span class="hljs-comment">#yum -y install centos-release-gluster</span><br></code></pre></td></tr></table></figure>
+
+<p>安装GlusterFS（每台机器执行）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@k8s-master01~]<span class="hljs-comment">#yum -y install glusterfs glusterfs-fuse glusterfs-server</span><br></code></pre></td></tr></table></figure>
+
+<p>安装结束。</p>
+<p>启动GlusterFS（每台机器执行）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@k8s-master01~]<span class="hljs-comment">#systemctl start glusterd.service</span><br>[root@k8s-master01~]<span class="hljs-comment">#systemctl enable glusterd.service</span><br></code></pre></td></tr></table></figure>
+
+<p>组建集群（ gfs1 机器执行）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">gluster peer probe gfs2  <br>gluster peer probe gfs3 <br></code></pre></td></tr></table></figure>
+
+<p>验证（gfs1 机器执行）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@node1 ~]<span class="hljs-comment"># gluster peer status </span><br>Number of Peers: 2<br><br>Hostname: gfs2<br>Uuid: c242e322-7ba5-4715-be02-1030e03e7972<br>State: Peer <span class="hljs-keyword">in</span> Cluster (Connected)<br><br>Hostname: gfs3<br>Uuid: c7439332-f4b2-4c98-8217-16d63dcfe111<br>State: Peer <span class="hljs-keyword">in</span> Cluster (Connected)<br></code></pre></td></tr></table></figure>
+
+<p>看到其他两个点的信息即代表GlusterFS集群组建成功。</p>
+<h1 id="Kubernetes使用GlusterFS"><a href="#Kubernetes使用GlusterFS" class="headerlink" title="Kubernetes使用GlusterFS"></a>Kubernetes使用GlusterFS</h1><p>有两种方式，手动和自动，手动需要每次使用存储时自己创建GlusterFS的卷（GlusterFS的数据存储在卷Volume上）；自动利用Kubernetes的 Dynamic Provisioning 特性，可以由Kubernetes自动创建GlusterFS卷，但是需要先部署Heketi软件，并且安装GlusterFS的机器上还要有裸磁盘。</p>
+<p>生产推荐使用自动方式</p>
+<h2 id="自动方式"><a href="#自动方式" class="headerlink" title="自动方式"></a>自动方式</h2><p>自动方式需要先部署Heketi软件，Heketi用来管理GlusterFS，并提供RESTful API接口供Kubernetes调用。Heketi需要使用裸磁盘，假设三个GlusterFS节点上都挂了一块裸磁盘 &#x2F;dev&#x2F;sdb。</p>
+<h2 id="部署Heketi"><a href="#部署Heketi" class="headerlink" title="部署Heketi"></a>部署Heketi</h2><p>部署在：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs">master1<br></code></pre></td></tr></table></figure>
+
+<p>安装yum源：</p>
+<figure class="highlight arduino"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs arduino">yum install centos-release-gluster<br></code></pre></td></tr></table></figure>
+
+<p>安装：heketi</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">yum install heketi heketi-client -y<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置hekeit用户免密登录root"><a href="#配置hekeit用户免密登录root" class="headerlink" title="配置hekeit用户免密登录root"></a>配置hekeit用户免密登录root</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@heketi ~]<span class="hljs-comment"># ssh-keygen -f /etc/heketi/heketi_key -t rsa -N &#x27;&#x27;</span><br>Generating public/private rsa key pair.<br>Your identification has been saved <span class="hljs-keyword">in</span> /etc/heketi/heketi_key.<br>Your public key has been saved <span class="hljs-keyword">in</span> /etc/heketi/heketi_key.pub.<br>The key fingerprint is:<br>SHA256:rTUHdBSM3C4yrr0DDsrJO3QVcoNzFKOgwI3r3Q8D/Yo root@heketi<br>The key<span class="hljs-string">&#x27;s randomart image is:</span><br><span class="hljs-string">+---[RSA 2048]----+</span><br><span class="hljs-string">|o +  o+. ..=+.   |</span><br><span class="hljs-string">|.+ o+.=. .o.o    |</span><br><span class="hljs-string">|. . o= o  ..     |</span><br><span class="hljs-string">| . . .. o....    |</span><br><span class="hljs-string">|. . o...So+..    |</span><br><span class="hljs-string">| ...o+...o o     |</span><br><span class="hljs-string">| + +.o=+.        |</span><br><span class="hljs-string">|  *E .o.o        |</span><br><span class="hljs-string">|  .o    .o       |</span><br><span class="hljs-string">+----[SHA256]-----+</span><br><span class="hljs-string"></span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@heketi ~]<span class="hljs-comment"># touch /etc/heketi/gluster.json</span><br>[root@heketi ~]<span class="hljs-comment"># chown -R heketi:heketi /etc/heketi/</span><br>[root@heketi ~]<span class="hljs-comment">#  ll /etc/heketi/</span><br>总用量 12<br>-rw-r--r-- 1 heketi heketi    0 1月  10 02:42 gluster.json<br>-rw-r--r-- 1 heketi heketi 1927 4月  18 2019 heketi.json<br>-rw------- 1 heketi heketi 1675 1月  10 02:42 heketi_key<br>-rw-r--r-- 1 heketi heketi  393 1月  10 02:42 heketi_key.pub<br></code></pre></td></tr></table></figure>
+
+<h3 id="密钥分发"><a href="#密钥分发" class="headerlink" title="密钥分发"></a>密钥分发</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@heketi etc]<span class="hljs-comment"># ssh-copy-id -i /etc/heketi/heketi_key.pub k8s-node01</span><br>[root@heketi etc]<span class="hljs-comment"># ssh-copy-id -i /etc/heketi/heketi_key.pub k8s-node02</span><br>[root@heketi etc]<span class="hljs-comment"># ssh-copy-id -i /etc/heketi/heketi_key.pub k8s-node03</span><br>[root@heketi etc]<span class="hljs-comment"># ssh-copy-id -i /etc/heketi/heketi_key.pub k8s-master02</span><br>[root@heketi etc]<span class="hljs-comment"># ssh-copy-id -i /etc/heketi/heketi_key.pub k8s-master03</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h3><p>修改&#x2F;etc&#x2F;heketi&#x2F;heketi.json（省略了没有修改的部分）：</p>
+<blockquote>
+<p>heketi节点操作<code> </code>配置文件中备注要删除 否则无法启动 ！！！</p>
+</blockquote>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><code class="hljs awk">[root@heketi ~]<span class="hljs-comment"># vi /etc/heketi/heketi.json</span><br>&#123;<br>  <span class="hljs-string">&quot;_port_comment&quot;</span>: <span class="hljs-string">&quot;Heketi Server Port Number&quot;</span>,<br>  <span class="hljs-regexp">//</span>修改一下端口防止冲突<br>  <span class="hljs-string">&quot;port&quot;</span>: <span class="hljs-string">&quot;8083&quot;</span>, <br>  <span class="hljs-regexp">//</span> 默认值false，不需要认证 不修改<br>  <span class="hljs-string">&quot;_use_auth&quot;</span>: <span class="hljs-string">&quot;Enable JWT authorization. Please enable for deployment&quot;</span>,<br>  <span class="hljs-string">&quot;use_auth&quot;</span>: false,<br><br>  <span class="hljs-string">&quot;_jwt&quot;</span>: <span class="hljs-string">&quot;Private keys for access&quot;</span>,<br>  <span class="hljs-string">&quot;jwt&quot;</span>: &#123;<br>    <span class="hljs-string">&quot;_admin&quot;</span>: <span class="hljs-string">&quot;Admin has access to all APIs&quot;</span>,<br>    <span class="hljs-string">&quot;admin&quot;</span>: &#123;<br>      <span class="hljs-string">&quot;key&quot;</span>: <span class="hljs-string">&quot;My Secret&quot;</span><br>    &#125;,<br>    <span class="hljs-string">&quot;_user&quot;</span>: <span class="hljs-string">&quot;User only has access to /volumes endpoint&quot;</span>,<br>    <span class="hljs-string">&quot;user&quot;</span>: &#123;<br>      <span class="hljs-string">&quot;key&quot;</span>: <span class="hljs-string">&quot;My Secret&quot;</span><br>    &#125;<br>  &#125;,<br><br>  <span class="hljs-string">&quot;_glusterfs_comment&quot;</span>: <span class="hljs-string">&quot;GlusterFS Configuration&quot;</span>,<br>  <span class="hljs-string">&quot;glusterfs&quot;</span>: &#123;<br>    <span class="hljs-string">&quot;_executor_comment&quot;</span>: [<br>      <span class="hljs-string">&quot;Execute plugin. Possible choices: mock, ssh&quot;</span>,<br>      <span class="hljs-string">&quot;mock: This setting is used for testing and development.&quot;</span>,<br>      <span class="hljs-string">&quot;      It will not send commands to any node.&quot;</span>,<br>      <span class="hljs-string">&quot;ssh:  This setting will notify Heketi to ssh to the nodes.&quot;</span>,<br>      <span class="hljs-string">&quot;      It will need the values in sshexec to be configured.&quot;</span>,<br>      <span class="hljs-string">&quot;kubernetes: Communicate with GlusterFS containers over&quot;</span>,<br>      <span class="hljs-string">&quot;            Kubernetes exec api.&quot;</span><br>    ],<br>    <span class="hljs-regexp">//</span> mock：测试环境下创建的volume无法挂载；<br>	<span class="hljs-regexp">//</span> kubernetes：在GlusterFS由kubernetes创建时采用<br>	<span class="hljs-regexp">//</span> ssh：这里使用<br>    <span class="hljs-string">&quot;executor&quot;</span>: <span class="hljs-string">&quot;ssh&quot;</span>,<br>    <span class="hljs-string">&quot;_sshexec_comment&quot;</span>: <span class="hljs-string">&quot;SSH username and private key file information&quot;</span>,<br>    <span class="hljs-string">&quot;sshexec&quot;</span>: &#123;<br>      <span class="hljs-string">&quot;keyfile&quot;</span>: <span class="hljs-string">&quot;/etc/heketi/heketi_key&quot;</span>, <span class="hljs-regexp">//</span> 这里修改密钥<br>      <span class="hljs-string">&quot;user&quot;</span>: <span class="hljs-string">&quot;root&quot;</span>,<br>      <span class="hljs-string">&quot;port&quot;</span>: <span class="hljs-string">&quot;22&quot;</span>, <span class="hljs-regexp">//</span>按自己ssh端口修改<br>      <span class="hljs-string">&quot;fstab&quot;</span>: <span class="hljs-string">&quot;/etc/fstab&quot;</span> <span class="hljs-regexp">//</span>创建的volume挂载位置<br>    &#125;,<br><br>    <span class="hljs-string">&quot;_kubeexec_comment&quot;</span>: <span class="hljs-string">&quot;Kubernetes configuration&quot;</span>,<br>    <span class="hljs-string">&quot;kubeexec&quot;</span>: &#123;<br>      <span class="hljs-string">&quot;host&quot;</span> :<span class="hljs-string">&quot;https://kubernetes.host:8443&quot;</span>,<br>      <span class="hljs-string">&quot;cert&quot;</span> : <span class="hljs-string">&quot;/path/to/crt.file&quot;</span>,<br>      <span class="hljs-string">&quot;insecure&quot;</span>: false,<br>      <span class="hljs-string">&quot;user&quot;</span>: <span class="hljs-string">&quot;kubernetes username&quot;</span>,<br>      <span class="hljs-string">&quot;password&quot;</span>: <span class="hljs-string">&quot;password for kubernetes user&quot;</span>,<br>      <span class="hljs-string">&quot;namespace&quot;</span>: <span class="hljs-string">&quot;OpenShift project or Kubernetes namespace&quot;</span>,<br>      <span class="hljs-string">&quot;fstab&quot;</span>: <span class="hljs-string">&quot;Optional: Specify fstab file on node.  Default is /etc/fstab&quot;</span><br>    &#125;,<br><br>    <span class="hljs-string">&quot;_db_comment&quot;</span>: <span class="hljs-string">&quot;Database file name&quot;</span>,<br>    <span class="hljs-string">&quot;db&quot;</span>: <span class="hljs-string">&quot;/var/lib/heketi/heketi.db&quot;</span>, <span class="hljs-regexp">//</span> 存储位置<br><br>    <span class="hljs-string">&quot;_loglevel_comment&quot;</span>: [<br>      <span class="hljs-string">&quot;Set log level. Choices are:&quot;</span>,<br>      <span class="hljs-string">&quot;  none, critical, error, warning, info, debug&quot;</span>,<br>      <span class="hljs-string">&quot;Default is warning&quot;</span><br>    ],<br>    <span class="hljs-string">&quot;loglevel&quot;</span> : <span class="hljs-string">&quot;debug&quot;</span><br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这里主要把端口改为8083了（防止冲突），executor改为ssh， sshexec的各项配置也做了相应修改。</p>
+<p>heketi  需要免密登录gfs节点之前部署集群已经做过了，这里就不做了，可参考部署集群时候的步骤</p>
+<p>启动：</p>
+<figure class="highlight nsis"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs nsis"><span class="hljs-params">system</span>ctl enable heketi<br><span class="hljs-params">system</span>ctl start heketi<br></code></pre></td></tr></table></figure>
+
+
+<p>看日志：</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs ebnf"><span class="hljs-attribute">journalctl -u heketi</span><br></code></pre></td></tr></table></figure>
+
+
+<p>（Heketi数据目录： &#x2F;var&#x2F;lib&#x2F;heketi）</p>
+<p>验证：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl http://192.168.XX.A:8083/hello<br><br>[root@master1 manifests]<span class="hljs-comment"># curl http://127.0.0.1:8083/hello</span><br>Hello from Heketi<br></code></pre></td></tr></table></figure>
+
+<p>或：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">heketi-cli --server http://192.168.XX.A:8083 cluster list<br><br>[root@master1 manifests]<span class="hljs-comment"># heketi-cli --server http://127.0.0.1:8083 cluster list</span><br>Clusters:<br><br></code></pre></td></tr></table></figure>
+
+<p>配置节点：</p>
+<p>新建topology.json：</p>
+<figure class="highlight prolog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs prolog">&#123;<br><span class="hljs-string">&quot;clusters&quot;</span>: [<br>    &#123;<br>        <span class="hljs-string">&quot;nodes&quot;</span>: [<br>            &#123;<br>                <span class="hljs-string">&quot;node&quot;</span>: &#123;<br>                    <span class="hljs-string">&quot;hostnames&quot;</span>: &#123;<br>                        <span class="hljs-string">&quot;manage&quot;</span>: [<br>                            <span class="hljs-string">&quot;gfs1&quot;</span><br>                        ],<br>                        <span class="hljs-string">&quot;storage&quot;</span>: [<br>                            <span class="hljs-string">&quot;192.168.100.140&quot;</span><br>                        ]<br>                    &#125;,<br>                    <span class="hljs-string">&quot;zone&quot;</span>: <span class="hljs-number">1</span><br>                &#125;,<br>                <span class="hljs-string">&quot;devices&quot;</span>: [<br>                    <span class="hljs-string">&quot;/dev/sdb&quot;</span><br>                ]<br>            &#125;,<br>            &#123;<br>                <span class="hljs-string">&quot;node&quot;</span>: &#123;<br>                    <span class="hljs-string">&quot;hostnames&quot;</span>: &#123;<br>                        <span class="hljs-string">&quot;manage&quot;</span>: [<br>                            <span class="hljs-string">&quot;gfs2&quot;</span><br>                        ],<br>                        <span class="hljs-string">&quot;storage&quot;</span>: [<br>                            <span class="hljs-string">&quot;192.168.100.141&quot;</span><br>                        ]<br>                    &#125;,<br>                    <span class="hljs-string">&quot;zone&quot;</span>: <span class="hljs-number">2</span><br>                &#125;,<br>                <span class="hljs-string">&quot;devices&quot;</span>: [<br>                    <span class="hljs-string">&quot;/dev/sdb&quot;</span><br>                ]<br>            &#125;,<br>            &#123;<br>                <span class="hljs-string">&quot;node&quot;</span>: &#123;<br>                    <span class="hljs-string">&quot;hostnames&quot;</span>: &#123;<br>                        <span class="hljs-string">&quot;manage&quot;</span>: [<br>                            <span class="hljs-string">&quot;gfs3&quot;</span><br>                        ],<br>                        <span class="hljs-string">&quot;storage&quot;</span>: [<br>                            <span class="hljs-string">&quot;192.168.100.142&quot;</span><br>                        ]<br>                    &#125;,<br>                    <span class="hljs-string">&quot;zone&quot;</span>: <span class="hljs-number">1</span><br>                &#125;,<br>                <span class="hljs-string">&quot;devices&quot;</span>: [<br>                    <span class="hljs-string">&quot;/dev/sdb&quot;</span><br>                ]<br>            &#125;<br>        ]<br>    &#125;<br>]<br>&#125; <br></code></pre></td></tr></table></figure>
+
+<p>载入配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> HEKETI_CLI_SERVER=http://192.168.XX.A:8083<br>heketi-cli topology load --json=topology.json<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment"># heketi-cli -s $HEKETI_CLI_SERVER --user admin --secret &#x27;123456&#x27; topology info</span><br>Creating cluster ... ID: 07de04e5d34d3af05e825830b6d3cb89<br>	Allowing file volumes on cluster.<br>	Allowing block volumes on cluster.<br>	Creating node gfs1 ... ID: 0a7b0cff7920604a2d350c7fe2902b51<br>		Adding device /dev/sdb ... OK<br>	Creating node gfs2 ... ID: 2e8d6b1220b5e3ea092727a8e6e03e55<br>		Adding device /dev/sdb ... OK<br>	Creating node gfs3 ... ID: 3ecbc8adca9a7bfdae84753209667f5f<br>		Adding device /dev/sdb ... OK<br></code></pre></td></tr></table></figure>
+
+<p>查看拓扑：</p>
+<figure class="highlight armasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs armasm"><span class="hljs-symbol">heketi</span>-cli topology <span class="hljs-meta">info</span><br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment"># heketi-cli topology info</span><br><br>Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br><br>    File:  <span class="hljs-literal">true</span><br>    Block: <span class="hljs-literal">true</span><br><br>    Volumes:<br><br><br>    Nodes:<br><br>	Node Id: 0a7b0cff7920604a2d350c7fe2902b51<br>	State: online<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Zone: 1<br>	Management Hostnames: gfs1<br>	Storage Hostnames: 192.168.60.135<br>	Devices:<br>		Id:912af1b21f3ccd7201ea27e668763675   Name:/dev/sdb            State:online    Size (GiB):500     Used (GiB):0       Free (GiB):500     <br>			Bricks:<br><br>	Node Id: 2e8d6b1220b5e3ea092727a8e6e03e55<br>	State: online<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Zone: 2<br>	Management Hostnames: gfs2<br>	Storage Hostnames: 192.168.60.136<br>	Devices:<br>		Id:8021d6ade3f7d3f06102ffe1180a254c   Name:/dev/sdb            State:online    Size (GiB):500     Used (GiB):0       Free (GiB):500     <br>			Bricks:<br><br>	Node Id: 3ecbc8adca9a7bfdae84753209667f5f<br>	State: online<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Zone: 1<br>	Management Hostnames: gfs3<br>	Storage Hostnames: 192.168.60.137<br>	Devices:<br>		Id:17c62a855c7fd2d1ba139815d961424c   Name:/dev/sdb            State:online    Size (GiB):500     Used (GiB):0       Free (GiB):500<br></code></pre></td></tr></table></figure>
+
+<p>建个大小为2G的volume试试：</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gauss">heketi-cli <span class="hljs-built_in">volume</span> <span class="hljs-keyword">create</span> --size=<span class="hljs-number">2</span><br></code></pre></td></tr></table></figure>
+
+
+<p>查看：</p>
+<figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs avrasm">heketi-<span class="hljs-keyword">cli</span> volume list<br></code></pre></td></tr></table></figure>
+
+
+<p>删除：</p>
+<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs gauss">heketi-cli <span class="hljs-built_in">volume</span> <span class="hljs-keyword">delete</span> &lt;Id&gt;<br></code></pre></td></tr></table></figure>
+
+
+
+<p>2）Kubernetes创建StorageClass</p>
+<p>Kubernetes通过创建StorageClass来使用 Dynamic Provisioning 特性，StorageClass连接Heketi，可以根据需要自动创建GluserFS的Volume，StorageClass还是要系统管理员创建，不过StorageClass不需要每次创建，因为这个不需要很多，不同的PVC可以用同一个StorageClass。</p>
+<h3 id="k8s使用gluster"><a href="#k8s使用gluster" class="headerlink" title="k8s使用gluster"></a>k8s使用gluster</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">vim glusterfs-storageclass.yaml<br></code></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">apiVersion: storage.k8s.io/v1     <br>kind: StorageClass<br>metadata:<br>  name: glusterfs<br>provisioner: kubernetes.io/glusterfs <span class="hljs-comment">#表示存储分配器，需要根据后端存储的不同而变更</span><br>parameters:<br>  resturl: <span class="hljs-string">&quot;http://192.168.60.132:8083&quot;</span> <span class="hljs-comment">#heketi API服务提供的url</span><br>  restauthenabled: <span class="hljs-string">&quot;true&quot;</span> <span class="hljs-comment">#可选参数，默认值为”false”，heketi服务开启认证时必须设置为”true”</span><br>  restuser: <span class="hljs-string">&quot;admin&quot;</span> <span class="hljs-comment">#可选参数，开启认证时设置相应用户名；</span><br>  restuserkey: <span class="hljs-string">&quot;adminkey&quot;</span> <span class="hljs-comment">#可选参数，开启认证时设置相应密码；</span><br>  volumetype: <span class="hljs-string">&quot;replicate:2&quot;</span> <span class="hljs-comment">#可选参数，设置卷类型及其参数，如果未分配卷类型，则有分配器决定卷类型；如”volumetype: replicate:3”表示3副本的replicate卷，”volumetype: disperse:4:2”表示disperse卷，其中‘4’是数据，’2’是冗余校验，”volumetype: none”表示distribute卷</span><br><br></code></pre></td></tr></table></figure>
+
+
+
+<p>执行命令创建</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">kubectl apply -f glusterfs-storageclass.yaml<br></code></pre></td></tr></table></figure>
+
+
+
+<p>查看storageclass</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment">#  kubectl get storageclass</span><br>NAME        PROVISIONER               RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE<br>glusterfs   kubernetes.io/glusterfs   Delete          Immediate           <span class="hljs-literal">false</span>                  25s<br><br></code></pre></td></tr></table></figure>
+
+<p>测试创建pvc</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">创建pvc，glusterfs-pvc.yaml<br>vim  glusterfs-pvc.yaml<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs bash">kind: PersistentVolumeClaim<br>apiVersion: v1<br>metadata:<br>  name: glusterfs-test<br>  namespace: default<br>  annotations:<br>    volume.beta.kubernetes.io/storage-class: <span class="hljs-string">&quot;glusterfs&quot;</span><br>spec:<br>  accessModes:<br>  - ReadWriteMany<br>  resources:<br>    requests:<br>      storage: 1Gi<br></code></pre></td></tr></table></figure>
+
+
+
+<p>执行命令创建</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment"># kubectl create -f glusterfs-pvc.yaml </span><br>persistentvolumeclaim/glusterfs-test created<br></code></pre></td></tr></table></figure>
+
+<p>查看pvc<br>状态为Bound说明创建成功</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment"># kubectl get pvc</span><br>NAME             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE<br>glusterfs-test   Bound    pvc-93a5101c-a8e3-440d-8f6e-f5ffa32698bf   1Gi        RWX            glusterfs      24s<br></code></pre></td></tr></table></figure>
+
+
+
+<p>查看pv<br>这里pv为动态创建的</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment"># kubectl get pv</span><br>NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   REASON   AGE<br>pvc-93a5101c-a8e3-440d-8f6e-f5ffa32698bf   1Gi        RWX            Delete           Bound    default/glusterfs-test   glusterfs               46s<br></code></pre></td></tr></table></figure>
+
+<p>查看gfs 使用情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><code class="hljs bash">[root@master1 heketi]<span class="hljs-comment"># heketi-cli topology info</span><br><br>Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br><br>    File:  <span class="hljs-literal">true</span><br>    Block: <span class="hljs-literal">true</span><br><br>    Volumes:<br><br>	Name: vol_3f8b03ac1b6e26f97638af6700426e16<br>	Size: 1<br>	Id: 3f8b03ac1b6e26f97638af6700426e16<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Mount: 192.168.60.135:vol_3f8b03ac1b6e26f97638af6700426e16<br>	Mount Options: backup-volfile-servers=192.168.60.136,192.168.60.137<br>	Durability Type: replicate<br>	Replica: 2<br>	Snapshot: Enabled<br>	Snapshot Factor: 1.00<br><br>		Bricks:<br>			Id: 291a8ea6406c19e47ee59ea9ff448948<br>			Path: /var/lib/heketi/mounts/vg_912af1b21f3ccd7201ea27e668763675/brick_291a8ea6406c19e47ee59ea9ff448948/brick<br>			Size (GiB): 1<br>			Node: 0a7b0cff7920604a2d350c7fe2902b51<br>			Device: 912af1b21f3ccd7201ea27e668763675<br><br>			Id: 814d7115ece0dbcff68508b4ddd53915<br>			Path: /var/lib/heketi/mounts/vg_8021d6ade3f7d3f06102ffe1180a254c/brick_814d7115ece0dbcff68508b4ddd53915/brick<br>			Size (GiB): 1<br>			Node: 2e8d6b1220b5e3ea092727a8e6e03e55<br>			Device: 8021d6ade3f7d3f06102ffe1180a254c<br><br><br><br>    Nodes:<br><br>	Node Id: 0a7b0cff7920604a2d350c7fe2902b51<br>	State: online<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Zone: 1<br>	Management Hostnames: gfs1<br>	Storage Hostnames: 192.168.60.135<br>	Devices:<br>		Id:912af1b21f3ccd7201ea27e668763675   Name:/dev/sdb            State:online    Size (GiB):500     Used (GiB):1       Free (GiB):498     <br>			Bricks:<br>				Id:291a8ea6406c19e47ee59ea9ff448948   Size (GiB):1       Path: /var/lib/heketi/mounts/vg_912af1b21f3ccd7201ea27e668763675/brick_291a8ea6406c19e47ee59ea9ff448948/brick<br><br>	Node Id: 2e8d6b1220b5e3ea092727a8e6e03e55<br>	State: online<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Zone: 2<br>	Management Hostnames: gfs2<br>	Storage Hostnames: 192.168.60.136<br>	Devices:<br>		Id:8021d6ade3f7d3f06102ffe1180a254c   Name:/dev/sdb            State:online    Size (GiB):500     Used (GiB):1       Free (GiB):498     <br>			Bricks:<br>				Id:814d7115ece0dbcff68508b4ddd53915   Size (GiB):1       Path: /var/lib/heketi/mounts/vg_8021d6ade3f7d3f06102ffe1180a254c/brick_814d7115ece0dbcff68508b4ddd53915/brick<br><br>	Node Id: 3ecbc8adca9a7bfdae84753209667f5f<br>	State: online<br>	Cluster Id: 07de04e5d34d3af05e825830b6d3cb89<br>	Zone: 1<br>	Management Hostnames: gfs3<br>	Storage Hostnames: 192.168.60.137<br>	Devices:<br>		Id:17c62a855c7fd2d1ba139815d961424c   Name:/dev/sdb            State:online    Size (GiB):500     Used (GiB):0       Free (GiB):500     <br>			Bricks:<br></code></pre></td></tr></table></figure>
+
+
+
+<blockquote>
+<p>问题<br>heketi有些卷明明存在但是却删不了<br>直接删除heketi存储目录&#x2F;var&#x2F;lib&#x2F;heketi&#x2F; 下的mounts&#x2F;文件夹，然后&gt; heketi.db 清空db文件，重新来<br>Can’t initialize physical volume “&#x2F;dev&#x2F;sdb1” of volume group “vg1” without –ff<br>这是因为没有卸载之前的vg和pv<br>使用命令vgremove,pvremove依次删除卷组，逻辑卷即可</p>
+</blockquote>
+<hr>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>部署GlusterFS持久存储</div>
+      <div>http://example.com/2022/10/13/kubernets部署GlusterFs_V1.0/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Mr.wang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年10月13日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/10/13/kubernets%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3_V1.0/" title="kubeadm 部署高可用k8s">
+                        <span class="hidden-mobile">kubeadm 部署高可用k8s</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/diy/timeDate.js"></script>
+<script src="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/metowolf/Metingjs@1.2/dist/Meting.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/caidai.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxingxing.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxuehua.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
