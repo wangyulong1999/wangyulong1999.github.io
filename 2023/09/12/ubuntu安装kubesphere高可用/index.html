@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yulong">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Ubuntu安装kubesphere 高可用架构环境(以三个master，三个worker为例)主机操作系统 Ubuntu 22.04 LTS注意：以下出现得IP均为测试实例主机IP地址，若部署需替换     主机名称 部署服务    master1 keepalived、haproxy、kubesphere、glusterfs   master2 keepalived、haproxy、kubes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu安装kubesphere 高可用架构">
+<meta property="og:url" content="http://example.com/2023/09/12/ubuntu%E5%AE%89%E8%A3%85kubesphere%E9%AB%98%E5%8F%AF%E7%94%A8/index.html">
+<meta property="og:site_name" content="yulong">
+<meta property="og:description" content="Ubuntu安装kubesphere 高可用架构环境(以三个master，三个worker为例)主机操作系统 Ubuntu 22.04 LTS注意：以下出现得IP均为测试实例主机IP地址，若部署需替换     主机名称 部署服务    master1 keepalived、haproxy、kubesphere、glusterfs   master2 keepalived、haproxy、kubes">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-12T03:02:26.478Z">
+<meta property="article:modified_time" content="2023-09-12T03:03:38.259Z">
+<meta property="article:author" content="yulong">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Ubuntu安装kubesphere 高可用架构 - yulong</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/shubiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/toubudaziji.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/gundongtiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/shubiao.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Ubuntu安装kubesphere 高可用架构"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-09-12 11:02" pubdate>
+          2023年9月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          27k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          224 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Ubuntu安装kubesphere 高可用架构</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Ubuntu安装kubesphere-高可用架构"><a href="#Ubuntu安装kubesphere-高可用架构" class="headerlink" title="Ubuntu安装kubesphere 高可用架构"></a>Ubuntu安装kubesphere 高可用架构</h1><h3 id="环境-以三个master，三个worker为例"><a href="#环境-以三个master，三个worker为例" class="headerlink" title="环境(以三个master，三个worker为例)"></a><strong>环境(以三个master，三个worker为例)</strong></h3><h5 id="主机操作系统-Ubuntu-22-04-LTS"><a href="#主机操作系统-Ubuntu-22-04-LTS" class="headerlink" title="主机操作系统 Ubuntu 22.04 LTS"></a><strong>主机操作系统 Ubuntu 22.04 LTS</strong></h5><p><strong>注意：以下出现得IP均为测试实例主机IP地址，若部署需替换</strong> </p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>部署服务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>master1</td>
+<td>keepalived、haproxy、kubesphere、glusterfs</td>
+</tr>
+<tr>
+<td>master2</td>
+<td>keepalived、haproxy、kubesphere、glusterfs</td>
+</tr>
+<tr>
+<td>master3</td>
+<td>keepalived、haproxy、kubesphere、glusterfs</td>
+</tr>
+<tr>
+<td>node1</td>
+<td>glusterfs、kubesphere</td>
+</tr>
+<tr>
+<td>node2</td>
+<td>glusterfs、kubesphere</td>
+</tr>
+<tr>
+<td>node3</td>
+<td>glusterfs、kubesphere</td>
+</tr>
+</tbody></table>
+<h3 id="软件"><a href="#软件" class="headerlink" title="软件"></a><strong>软件</strong></h3><table>
+<thead>
+<tr>
+<th>软件</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>docker-ce</td>
+<td>20.10.8</td>
+</tr>
+<tr>
+<td>keepalived</td>
+<td>1.3.5-19</td>
+</tr>
+<tr>
+<td>haproxy</td>
+<td>1.5.18-9</td>
+</tr>
+<tr>
+<td>kk</td>
+<td>1.1.1</td>
+</tr>
+<tr>
+<td>glusterfs</td>
+<td>9.4-1</td>
+</tr>
+<tr>
+<td>heketi</td>
+<td>9.0.0</td>
+</tr>
+<tr>
+<td>kubesphere</td>
+<td>v3.1.1</td>
+</tr>
+<tr>
+<td>kubernetes</td>
+<td>v1.20.6</td>
+</tr>
+</tbody></table>
+<h3 id="关闭ubuntu版selinux"><a href="#关闭ubuntu版selinux" class="headerlink" title="关闭ubuntu版selinux"></a><strong>关闭ubuntu版selinux</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Shell">systemctl stop  apparmor <br>systemctl disable apparmor<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置基础依赖"><a href="#配置基础依赖" class="headerlink" title="配置基础依赖"></a><strong>配置基础依赖</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs Shell">修改apt源<br>sed -i &#x27;s/archive.ubuntu.com/mirrors.aliyun.com/g&#x27;  /etc/apt/sources.list <br>sed -i &#x27;s/security.ubuntu.com/mirrors.aliyun.com/g&#x27;  /etc/apt/sources.list<br>apt-get update<br>apt-get --download-only install  socat conntrack glusterfs-server -y<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 安装包会在/var/cache/apt/archives/ 将deb结尾包压缩上传到需要安装得主机即可(目录可以指定)</span></span><br>dpkg -i *.deb<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 查询</span></span><br>apt-cache policy &lt;软件名称&gt;<br><br>保证主机时间同步<br>timedatectl set-timezone &quot;Asia/Shanghai&quot;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">#如果主机磁盘不足得话可以删除</span></span><br>apt-get clean all<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置-x2F-etc-x2F-hosts"><a href="#配置-x2F-etc-x2F-hosts" class="headerlink" title="配置&#x2F;etc&#x2F;hosts"></a><strong>配置&#x2F;etc&#x2F;hosts</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs Shell">[root@localhost ~]# cat /etc/hosts<br>127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4<br>::1         localhost localhost.localdomain localhost6 localhost6.localdomain6<br><br>192.168.40.120  master1<br>192.168.40.121  master2<br>192.168.40.122  master3<br>192.168.40.123  node1<br>192.168.40.124  node2<br>192.168.40.125  node3<br>10.0.51.33      harbor.ops.bsnbase.com<br></code></pre></td></tr></table></figure>
+
+<h2 id="在线安装docker国内"><a href="#在线安装docker国内" class="headerlink" title="在线安装docker国内"></a><strong>在线安装docker国内</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 下载依赖</span></span><br>apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 导入key</span></span><br>curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 导入源</span></span><br>add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 安装</span></span><br>apt-get -y install docker-ce<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 添加daemon.json</span></span><br>&#123;<br>    &quot;registry-mirrors&quot;: [&quot;https://obou6wyb.mirror.aliyuncs.com&quot;],<br>    &quot;log-driver&quot;:&quot;json-file&quot;,<br>    &quot;log-opts&quot;:&#123;&quot;max-size&quot; :&quot;100m&quot;,&quot;max-file&quot;:&quot;1&quot;&#125;,<br>    &quot;dns&quot;:[&quot;10.233.0.3&quot;],<br>    &quot;insecure-registries&quot;:[&quot;harbor.ops.bsnbase.com&quot;]<br>&#125;<br>systemctl daemon-reload <br>systemctl start docker <br>systemctl stop docker<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 查看</span></span><br>root@node1:~# docker -v<br>Docker version 20.10.17, build 100c701<br></code></pre></td></tr></table></figure>
+
+<h3 id="在线安装docker国际版"><a href="#在线安装docker国际版" class="headerlink" title="在线安装docker国际版"></a><strong>在线安装docker国际版</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 更新ubuntu</span></span><br>apt update<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 添加docker库</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 安装依赖软件</span></span><br>apt install apt-transport-https ca-certificates curl software-properties-common gnupg lsb-release<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 添加docker官方GPG密钥</span></span><br>curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 添加docker库</span></span><br>echo &quot;deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable&quot; | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 再次更新</span></span><br>apt update<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 安装Docker</span></span><br>apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 可选版本安装</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 查看可以安装得版本</span></span><br>apt-cache madison docker-ce<br>docker-ce | 5:20.10.17~3-0~ubuntu-jammy | https://download.docker.com/linux/ubuntu jammy/stable amd64 Packages<br>    docker-ce | 5:20.10.16~3-0~ubuntu-jammy | https://download.docker.com/linux/ubuntu jammy/stable amd64 Packages<br>    docker-ce | 5:20.10.15~3-0~ubuntu-jammy | https://download.docker.com/linux/ubuntu jammy/stable amd64 Packages<br>    docker-ce | 5:20.10.14~3-0~ubuntu-jammy | https://download.docker.com/linux/ubuntu jammy/stable amd64 Packages<br>    docker-ce | 5:20.10.13~3-0~ubuntu-jammy | https://download.docker.com/linux/ubuntu jammy/stable amd64 Packages<br>    <br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 选版本安装</span></span><br>apt install docker-ce=5:20.10.16~3-0~ubuntu-jammy docker-ce-cli=5:20.10.16~3-0~ubuntu-jammy containerd.io<br></code></pre></td></tr></table></figure>
+
+<h2 id="离线安装docker"><a href="#离线安装docker" class="headerlink" title="离线安装docker"></a><strong>离线安装docker</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs Shell">下载docker 安装包<br><br>https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-20.10.8.tgz<br><br>tar zxf docker-20.10.8.tgz<br>cp docker/* /usr/bin/<br><br>创建启动脚本<br><br>cat /usr/lib/systemd/system/docker.service<br>[Unit]<br>Description=Docker Application Container Engine<br>Documentation=https://docs.docker.com<br>After=network-online.target firewalld.service containerd.service<br>Wants=network-online.target<br><span class="hljs-meta prompt_">#</span><span class="language-bash">Requires=docker.socket containerd.service</span><br><br>[Service]<br>Type=notify<br><span class="hljs-meta prompt_"># </span><span class="language-bash">the default is not to use systemd <span class="hljs-keyword">for</span> cgroups because the delegate issues still</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">exists and systemd currently does not support the cgroup feature <span class="hljs-built_in">set</span> required</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash"><span class="hljs-keyword">for</span> containers run by docker</span><br><span class="hljs-meta prompt_">#</span><span class="language-bash">ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock</span><br>ExecStart=/usr/bin/dockerd<br>ExecReload=/bin/kill -s HUP $MAINPID<br>TimeoutSec=0<br>RestartSec=2<br>Restart=always<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Note that StartLimit* options were moved from <span class="hljs-string">&quot;Service&quot;</span> to <span class="hljs-string">&quot;Unit&quot;</span> <span class="hljs-keyword">in</span> systemd 229.</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Both the old, and new location are accepted by systemd 229 and up, so using the old location</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">to make them work <span class="hljs-keyword">for</span> either version of systemd.</span><br>StartLimitBurst=3<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Note that StartLimitInterval was renamed to StartLimitIntervalSec <span class="hljs-keyword">in</span> systemd 230.</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Both the old, and new name are accepted by systemd 230 and up, so using the old name to make</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">this option work <span class="hljs-keyword">for</span> either version of systemd.</span><br>StartLimitInterval=60s<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Having non-zero Limit*s causes performance problems due to accounting overhead</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash"><span class="hljs-keyword">in</span> the kernel. We recommend using cgroups to <span class="hljs-keyword">do</span> container-local accounting.</span><br>LimitNOFILE=infinity<br>LimitNPROC=infinity<br>LimitCORE=infinity<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Comment TasksMax <span class="hljs-keyword">if</span> your systemd version does not support it.</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">Only systemd 226 and above support this option.</span><br>TasksMax=infinity<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash"><span class="hljs-built_in">set</span> delegate <span class="hljs-built_in">yes</span> so that systemd does not reset the cgroups of docker containers</span><br>Delegate=yes<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash"><span class="hljs-built_in">kill</span> only the docker process, not all processes <span class="hljs-keyword">in</span> the cgroup</span><br>KillMode=process<br>OOMScoreAdjust=-500<br><br>[Install]<br>WantedBy=multi-user.target<br><br>创建 daemon.json<br>mkdir /etc/docker<br>cat /etc/docker/daemon.json<br>&#123; <br>&quot;registry-mirrors&quot;: [&quot;https://obou6wyb.mirror.aliyuncs.com&quot;],<br>&quot;log-driver&quot;:&quot;json-file&quot;,<br>&quot;log-opts&quot;:&#123;&quot;max-size&quot; :&quot;100m&quot;,&quot;max-file&quot;:&quot;1&quot;&#125;,<br>&quot;insecure-registries&quot;:[&quot;harbor.ops.bsnbase.com&quot;]<br>&#125;<br><br>需要注意得是配置私有仓库地址 需要在/etc/hosts 解析相对应的地址<br></code></pre></td></tr></table></figure>
+
+<h2 id="离线安装haproxy"><a href="#离线安装haproxy" class="headerlink" title="离线安装haproxy"></a><strong>离线安装haproxy</strong></h2><h3 id="获取离线部署包"><a href="#获取离线部署包" class="headerlink" title="获取离线部署包"></a><strong>获取离线部署包</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs Shell">找一台新装的主机<br>apt-get --download-only install haproxy keepalived<br><br>离线包文件<br>root@node3:/var/cache/apt/archives# ll<br>total 3664<br>-rw-r--r-- 1 root root 1634662 Mar  1 02:17 haproxy_2.4.14-1ubuntu1_amd64.deb<br>-rw-r--r-- 1 root root   42170 Mar 25 00:58 ipvsadm_1%3a1.31-1build2_amd64.deb<br>-rw-r--r-- 1 root root  452554 Mar 25 00:57 keepalived_1%3a2.2.4-0.2build1_amd64.deb<br>-rw-r--r-- 1 root root  140026 Mar 25 19:37 liblua5.3-0_5.3.6-1build1_amd64.deb<br>-rw-r--r-- 1 root root   59070 Feb  9 13:59 libnl-3-200_3.5.0-0.1_amd64.deb<br>-rw-r--r-- 1 root root   12412 Feb  9 13:59 libnl-genl-3-200_3.5.0-0.1_amd64.deb<br>-rw-r--r-- 1 root root    5274 Apr  5 16:14 libsensors-config_1%3a3.6.0-7ubuntu1_all.deb<br>-rw-r--r-- 1 root root   26346 Apr  5 16:14 libsensors5_1%3a3.6.0-7ubuntu1_amd64.deb<br>-rw-r--r-- 1 root root  200614 Apr 23 05:24 libsnmp-base_5.9.1+dfsg-1ubuntu2.1_all.deb<br>-rw-r--r-- 1 root root 1069086 Apr 23 05:24 libsnmp40_5.9.1+dfsg-1ubuntu2.1_amd64.deb<br>-rw-r----- 1 root root       0 Jul  8 16:57 lock<br>-rw-r--r-- 1 root root   74800 May  5  2018 lrzsz_0.12.21-10_amd64.deb<br>drwx------ 2 _apt root    4096 Jul 15 15:41 partial/<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置haproxy-cgf"><a href="#配置haproxy-cgf" class="headerlink" title="配置haproxy.cgf"></a><strong>配置haproxy.cgf</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs Shell">[root@localhost ~]# cat /etc/haproxy/haproxy.cfg<br>global<br>    log /dev/log  local0 warning<br>    chroot      /var/lib/haproxy<br>    pidfile     /var/run/haproxy.pid<br>    maxconn     4000<br>    user        haproxy<br>    group       haproxy<br>    daemon<br>   <br>   stats socket /var/lib/haproxy/stats<br>   <br>defaults<br>  log global<br>  option  httplog<br>  option  dontlognull<br>        timeout connect 5000<br>        timeout client 50000<br>        timeout server 50000<br>   <br>frontend kube-apiserver<br>  bind *:16443   ## 端口需要开通，后续需要使用<br>  mode tcp<br>  option tcplog<br>  default_backend kube-apiserver<br>   <br>backend kube-apiserver<br>    mode tcp<br>    option tcplog<br>    option tcp-check<br>    balance roundrobin<br>    default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100<br>    server kube-apiserver-1 192.168.40.120:6443 check # Replace the IP address with your own.<br>    server kube-apiserver-2 192.168.40.121:6443 check # Replace the IP address with your own.<br>    server kube-apiserver-3 192.168.40.122:6443 check # Replace the IP address with your own.<br></code></pre></td></tr></table></figure>
+
+<h3 id="启动haproxy"><a href="#启动haproxy" class="headerlink" title="启动haproxy"></a><strong>启动haproxy</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Shell">systemctl start haproxy<br>systemctl enable haproxy<br>检查端口 6443<br></code></pre></td></tr></table></figure>
+
+<h2 id="离线安装keepalived"><a href="#离线安装keepalived" class="headerlink" title="离线安装keepalived"></a><strong>离线安装keepalived</strong></h2><h3 id="获取离线部署包-1"><a href="#获取离线部署包-1" class="headerlink" title="获取离线部署包"></a><strong>获取离线部署包</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Shell">apt-get --download-only install  keepalived<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置keepalived-conf"><a href="#配置keepalived-conf" class="headerlink" title="配置keepalived.conf"></a><strong>配置keepalived.conf</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># master 配置</span></span><br>global_defs &#123;<br>  notification_email &#123;<br>  &#125;<br>  router_id LVS_DEVEL<br>  vrrp_skip_check_adv_addr<br>  vrrp_garp_interval 0<br>  vrrp_gna_interval 0<br>&#125;<br>   <br>vrrp_script chk_haproxy &#123;<br><span class="hljs-meta prompt_">  #</span><span class="language-bash">script <span class="hljs-string">&quot;killall -0 haproxy&quot;</span></span><br>  script &quot;/etc/keepalived/check_haproxy.sh&quot;<br>  interval 2<br>  weight 2<br>&#125;<br>   <br>vrrp_instance haproxy-vip &#123;<br>  state MASTER<br>  priority 100<br>  interface eth0                       # Network card<br>  virtual_router_id 60<br>  advert_int 1<br>  authentication &#123;<br>    auth_type PASS<br>    auth_pass 1111<br>  &#125;<br>  unicast_src_ip 192.168.40.120      # The IP address of this machine<br>  unicast_peer &#123;<br>    192.168.40.121                         # The IP address of peer machines<br>    192.168.40.122                         # The IP address of peer machines<br>  &#125;<br>   <br>  virtual_ipaddress &#123;<br>    192.168.40.111/32                  # The VIP address  需注意子网掩码位数<br>  &#125;<br>   <br>  track_script &#123;<br>    chk_haproxy<br>  &#125;<br>&#125;<br><br>其他两条主机 只需要修改unicast_src_ip 为当前主机的IP unicast_peer 里面配置备节点的IP，state设为BACKUP<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置check-haproxy-sh"><a href="#配置check-haproxy-sh" class="headerlink" title="配置check_haproxy.sh"></a><strong>配置check_haproxy.sh</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash">!/bin/bash</span><br>killall -0 haproxy<br>if [[ $? != 0 ]];then<br>   systemctl stop keepalived<br>else<br>  exit 0<br>fi<br></code></pre></td></tr></table></figure>
+
+<h3 id="启动keepalived"><a href="#启动keepalived" class="headerlink" title="启动keepalived"></a><strong>启动keepalived</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Shell">systemctl start keepalived<br>systemctl enable keepalived<br>检查服务 ps -ef|grep keep<br></code></pre></td></tr></table></figure>
+
+<h3 id="测试vip飘移动"><a href="#测试vip飘移动" class="headerlink" title="测试vip飘移动"></a><strong>测试vip飘移动</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Shell">在有vip的主机上 关闭systemctl stop haproxy 查看vip是否删除 并且已经在备节点中的一台生成<br>需要注意 关闭haproxy后 keepalived也一同关闭了 恢复需要先启动haproxy 在启动keepalived<br></code></pre></td></tr></table></figure>
+
+<h2 id="离线安装glusterfs"><a href="#离线安装glusterfs" class="headerlink" title="离线安装glusterfs"></a><strong>离线安装glusterfs</strong></h2><h3 id="获取离线部署包-2"><a href="#获取离线部署包-2" class="headerlink" title="获取离线部署包"></a><strong>获取离线部署包</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">依赖</span><br>apt-get install software-properties-common<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加社区源(版本可以根据要求修改)</span><br>add-apt-repository ppa:gluster/glusterfs-9<br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装</span><br>apt-get install glusterfs-server -y<br><br>root@node2:/bsn/iso/glusterfs# ll<br>total 4072<br>-rw-r--r-- 1 root root   22642 Jul 11 17:38 attr_1%3a2.5.1-1build1_amd64.deb<br>-rw-r--r-- 1 root root  179350 Jul 11 17:38 glusterfs-cli_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   26372 Jul 11 17:38 glusterfs-client_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root 2768338 Jul 11 17:38 glusterfs-common_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   22248 Jul 11 17:38 glusterfs-server_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   50410 Jul 11 17:38 keyutils_1.6.1-2ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root   93926 Jul 11 17:38 libevent-core-2.1-7_2.1.12-stable-1build3_amd64.deb<br>-rw-r--r-- 1 root root   77272 Jul 11 17:38 libgfapi0_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   27542 Jul 11 17:38 libgfchangelog0_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   47090 Jul 11 17:38 libgfrpc0_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   22142 Jul 11 17:38 libgfxdr0_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root    5936 Jul 11 17:38 libglusterd0_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root  287966 Jul 11 17:38 libglusterfs0_10.1-1_amd64.deb<br>-rw-r--r-- 1 root root   43534 Jul 11 17:38 libnfsidmap1_1%3a2.6.1-1ubuntu1_amd64.deb<br>-rw-r--r-- 1 root root  240754 Jul 11 17:38 nfs-common_1%3a2.6.1-1ubuntu1_amd64.deb<br>-rw-r--r-- 1 root root  119104 Jul 11 17:38 psmisc_23.4-2build3_amd64.deb<br>-rw-r--r-- 1 root root   31318 Jul 11 17:38 python3-prettytable_2.5.0-2_all.deb<br>-rw-r--r-- 1 root root   21924 Jul 11 17:38 python3-wcwidth_0.2.5+dfsg1-1_all.deb<br>-rw-r--r-- 1 root root   46608 Jul 11 17:38 rpcbind_1.2.6-2build1_amd64.deb<br></code></pre></td></tr></table></figure>
+
+<h3 id="加载内核模块"><a href="#加载内核模块" class="headerlink" title="加载内核模块"></a><strong>加载内核模块</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 所有glusterfs主机执行</span></span><br>echo dm_thin_pool | sudo tee -a /etc/modules<br>echo dm_snapshot | sudo tee -a /etc/modules<br>echo dm_mirror | sudo tee -a /etc/modules<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 安装 thin-provisioning-tools</span></span><br>apt-get -y install thin-provisioning-tools<br></code></pre></td></tr></table></figure>
+
+<h3 id="启动glusterfs"><a href="#启动glusterfs" class="headerlink" title="启动glusterfs"></a><strong>启动glusterfs</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs Shell">systemctl start glusterd<br>systemctl enable glusterd<br>检查服务<br>systemctl status glusterd<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置集群"><a href="#配置集群" class="headerlink" title="配置集群"></a><strong>配置集群</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs Shell">gluster peer probe node2<br>gluster peer probe node3<br><br>验证<br><br>gluster peer status<br>Number of Peers: 2<br><br>Hostname: node3<br>Uuid: 72a367c5-1e30-47d5-8302-cf4765698cff<br>State: Peer in Cluster (Connected)<br>Other names:<br>ip <br><br>Hostname: node2<br>Uuid: ee8df3f1-f3ad-4558-b7e2-d431bd6c110a<br>State: Peer in Cluster (Connected)<br>Other names:<br>ip <br></code></pre></td></tr></table></figure>
+
+<h2 id="离线安装heketi"><a href="#离线安装heketi" class="headerlink" title="离线安装heketi"></a><strong>离线安装heketi</strong></h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 获取离线部署包</span></span><br>wget https://github.com/heketi/heketi/releases/download/v7.0.0/heketi-v7.0.0.linux.amd64.tar.gz<br><br>tar -xf heketi-v7.0.0.linux.amd64.tar.gz<br>cd heketi<br>cp heketi /usr/bin<br>cp heketi-cli /usr/bin<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 创建 Heketi 服务文件</span></span><br>vi /lib/systemd/system/heketi.service<br>[Unit]<br>Description=Heketi Server<br>[Service]<br>Type=simple<br>WorkingDirectory=/var/lib/heketi<br>ExecStart=/usr/bin/heketi --config=/etc/heketi/heketi.json<br>Restart=on-failure<br>StandardOutput=syslog<br>StandardError=syslog<br>[Install]<br>WantedBy=multi-user.target<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 创建 Heketi 文件夹</span></span><br>mkdir -p /var/lib/heketi<br>mkdir -p /etc/heketi<br></code></pre></td></tr></table></figure>
+
+<h3 id="创建heketi使用得ssh密钥"><a href="#创建heketi使用得ssh密钥" class="headerlink" title="创建heketi使用得ssh密钥"></a><strong>创建heketi使用得ssh密钥</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs Shell">创建sshkey(Ubuntu 22.04版本需要更换公私钥格式)<br>ssh-keygen -m PEM  -q -f /etc/heketi/heketi_key -N &#x27;&#x27;<br>发送sshkey<br>ssh-copy-id -i /etc/heketi/heketi_key.pub node1<br>ssh-copy-id -i /etc/heketi/heketi_key.pub node2<br>ssh-copy-id -i /etc/heketi/heketi_key.pub node3<br><br>授权heketi_key 644<br>chmod 644 heketi_key<br><br>修改ssh配置 <br>PubkeyAuthentication yes<br>PubkeyAcceptedKeyTypes=+ssh-rsa<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置heketi"><a href="#配置heketi" class="headerlink" title="配置heketi"></a><strong>配置heketi</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><code class="hljs Shell">编辑配置文件vi /etc/heketi/heketi.json 修改段落executor 处，设置成ssh<br>&#123;<br>  &quot;_port_comment&quot;: &quot;Heketi Server Port Number&quot;,<br>  &quot;port&quot;: &quot;8080&quot;,<br><br>  &quot;_use_auth&quot;: &quot;Enable JWT authorization. Please enable for deployment&quot;,<br>  &quot;use_auth&quot;: false,<br><br>  &quot;_jwt&quot;: &quot;Private keys for access&quot;,<br>  &quot;jwt&quot;: &#123;<br>    &quot;_admin&quot;: &quot;Admin has access to all APIs&quot;,<br>    &quot;admin&quot;: &#123;<br>      &quot;key&quot;: &quot;123456&quot;<br>    &#125;,<br>    &quot;_user&quot;: &quot;User only has access to /volumes endpoint&quot;,<br>    &quot;user&quot;: &#123;<br>      &quot;key&quot;: &quot;123456&quot;<br>    &#125;<br>  &#125;,<br><br>  &quot;_glusterfs_comment&quot;: &quot;GlusterFS Configuration&quot;,<br>  &quot;glusterfs&quot;: &#123;<br>    &quot;_executor_comment&quot;: [<br>      &quot;Execute plugin. Possible choices: mock, ssh&quot;,<br>      &quot;mock: This setting is used for testing and development.&quot;,<br>      &quot;      It will not send commands to any node.&quot;,<br>      &quot;ssh:  This setting will notify Heketi to ssh to the nodes.&quot;,<br>      &quot;      It will need the values in sshexec to be configured.&quot;,<br>      &quot;kubernetes: Communicate with GlusterFS containers over&quot;,<br>      &quot;            Kubernetes exec api.&quot;<br>    ],<br>    &quot;executor&quot;: &quot;ssh&quot;,<br><br>    &quot;_sshexec_comment&quot;: &quot;&quot;,<br>    &quot;sshexec&quot;: &#123;<br>      &quot;keyfile&quot;: &quot;/etc/heketi/heketi_key&quot;,<br>      &quot;user&quot;: &quot;root&quot;<br>    &#125;,<br><br>    &quot;_kubeexec_comment&quot;: &quot;Kubernetes configuration&quot;,<br>    &quot;kubeexec&quot;: &#123;<br>      &quot;host&quot; :&quot;https://kubernetes.host:8443&quot;,<br>      &quot;cert&quot; : &quot;/path/to/crt.file&quot;,<br>      &quot;insecure&quot;: false,<br>      &quot;user&quot;: &quot;kubernetes username&quot;,<br>      &quot;password&quot;: &quot;password for kubernetes user&quot;,<br>      &quot;namespace&quot;: &quot;OpenShift project or Kubernetes namespace&quot;,<br>      &quot;fstab&quot;: &quot;Optional: Specify fstab file on node.  Default is /etc/fstab&quot;<br>    &#125;,<br><br>    &quot;_db_comment&quot;: &quot;Database file name&quot;,<br>    &quot;db&quot;: &quot;/var/lib/heketi/heketi.db&quot;,<br>    &quot;brick_max_size_gb&quot; : 1024,<br>    &quot;brick_min_size_gb&quot; : 1,<br>    &quot;max_bricks_per_volume&quot; : 33,<br><br>    &quot;_loglevel_comment&quot;: [<br>      &quot;Set log level. Choices are:&quot;,<br>      &quot;  none, critical, error, warning, info, debug&quot;,<br>      &quot;Default is warning&quot;<br>    ],<br>    &quot;loglevel&quot; : &quot;debug&quot;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="启动heketi"><a href="#启动heketi" class="headerlink" title="启动heketi"></a><strong>启动heketi</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Shell">systemctl start heketi.service<br>systemctl enable heketi.service<br>systemctl status heketi.service<br></code></pre></td></tr></table></figure>
+
+<h3 id="创建topology-json"><a href="#创建topology-json" class="headerlink" title="创建topology.json"></a><strong>创建topology.json</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><code class="hljs Shell">&#123;<br> &quot;clusters&quot;: [<br>    &#123;<br>      &quot;nodes&quot;: [<br>        &#123;<br>          &quot;node&quot;: &#123;<br>            &quot;hostnames&quot;: &#123;<br>              &quot;manage&quot;: [<br>                &quot;node1&quot; <br>             ],<br>             &quot;storage&quot;: [<br>               &quot;192.168.40.123&quot; <br>             ]<br>           &#125;,<br>           &quot;zone&quot;: 1<br>         &#125;,<br>         &quot;devices&quot;: [<br>           &quot;/dev/sdc&quot; <br>         ]<br>       &#125;,<br>        &#123;<br>          &quot;node&quot;: &#123;<br>            &quot;hostnames&quot;: &#123;<br>              &quot;manage&quot;: [<br>                &quot;node2&quot; <br>             ],<br>             &quot;storage&quot;: [<br>               &quot;192.168.40.124&quot; <br>             ]<br>           &#125;,<br>           &quot;zone&quot;: 1<br>         &#125;,<br>         &quot;devices&quot;: [<br>           &quot;/dev/sdc&quot; <br>         ]<br>       &#125;,<br>       &#123;<br>          &quot;node&quot;: &#123;<br>            &quot;hostnames&quot;: &#123;<br>              &quot;manage&quot;: [<br>                &quot;node3&quot;<br>             ],<br>             &quot;storage&quot;: [<br>               &quot;192.168.40.125&quot;  <br>             ]<br>           &#125;,<br>           &quot;zone&quot;: 1<br>         &#125;,<br>         &quot;devices&quot;: [<br>           &quot;/dev/sdc&quot;<br>         ]<br>       &#125;<br>     ]<br>   &#125;<br> ]<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="配置磁盘为lvm"><a href="#配置磁盘为lvm" class="headerlink" title="配置磁盘为lvm"></a><strong>配置磁盘为lvm</strong></h3><h5 id="三台主机上需要有一块裸盘，无需挂载，需要转换成物理卷，供gluster创建分区"><a href="#三台主机上需要有一块裸盘，无需挂载，需要转换成物理卷，供gluster创建分区" class="headerlink" title="三台主机上需要有一块裸盘，无需挂载，需要转换成物理卷，供gluster创建分区"></a><strong>三台主机上需要有一块裸盘，无需挂载，需要转换成物理卷，供gluster创建分区</strong></h5><p>三台主机都要执行 pvcreate &#x2F;dev&#x2F;sdc</p>
+<h3 id="加载heketi"><a href="#加载heketi" class="headerlink" title="加载heketi"></a><strong>加载heketi</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs Shell">export HEKETI_CLI_SERVER=http://localhost:8080<br>heketi-cli topology load --json=/etc/heketi/topology.json<br><br>预计输出 全部是ok即可，保存cluser id<br>[root@localhost ~]# heketi-cli topology load --json=/etc/heketi/topology.json<br>Creating cluster ... ID: 2a90bc8255fc44b6b6fc36f5d65cc7db<br>        Allowing file volumes on cluster.<br>        Allowing block volumes on cluster.<br>        Creating node gfs1 ... ID: 10cd09040be405b67af4fa5e6165e50c<br>                Adding device /dev/sdc ... OK<br>        Creating node gfs2 ... ID: 12a2e7a7d6438bae4609e8de879e157e<br>                Adding device /dev/sdc ... OK<br>        Creating node gfs3 ... ID: 464f48e831dd5e9ed02d7a74350edddf<br>                Adding device /dev/sdc ... OK<br></code></pre></td></tr></table></figure>
+
+<h3 id="检查"><a href="#检查" class="headerlink" title="检查"></a><strong>检查</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Shell">heketi-cli cluster info 2a90bc8255fc44b6b6fc36f5d65cc7db<br>查看磁盘大小是否和实际一致<br></code></pre></td></tr></table></figure>
+
+<h2 id="离线部署kubesphere"><a href="#离线部署kubesphere" class="headerlink" title="离线部署kubesphere"></a><strong>离线部署kubesphere</strong></h2><h3 id="1、部署docker私有仓库"><a href="#1、部署docker私有仓库" class="headerlink" title="1、部署docker私有仓库"></a><strong>1、部署docker私有仓库</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 下载离线安装包</span></span><br>wget https://github.com/goharbor/harbor/releases/download/v2.2.0<br>tar -xf harbor-offline-install-v2.2.0.tar.gz<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 解压后并备份配置文件,创建ssl证书目录</span></span><br>[root@harbor harbor]# ll -h<br>总用量 15G<br>drwxr-xr-x  2   10000 10000    6 8月   4 21:17 ca_download<br>drwxr-xr-x  3 root    root    20 8月   4 21:17 common<br>-rw-r--r--  1 root    root  3.3K 5月  15 2021 common.sh<br>drwx------ 19 polkitd input 4.0K 12月 21 10:11 database<br>-rw-r--r--  1 root    root  6.0K 8月   4 21:17 docker-compose.yml<br>-rw-r--r--  1 root    root  484M 5月  15 2021 harbor.v2.2.2.tar.gz<br>-rw-r--r--  1 root    root  7.8K 8月   4 21:17 harbor.yml<br>-rw-r--r--  1 root    root  7.7K 5月  15 2021 harbor.yml.tmpl<br>-rwxr-xr-x  1 root    root  2.5K 5月  15 2021 install.sh<br>drwxr-xr-x  2   10000 10000    6 8月   4 21:17 job_logs<br>-rw-r--r--  1 root    root   12K 5月  15 2021 LICENSE<br>-rwxr-xr-x  1 root    root  1.9K 5月  15 2021 prepare<br>drwxr-xr-x  2 polkitd input   22 1月  11 16:03 redis<br>drwxr-xr-x  3   10000 10000   20 8月   4 21:20 registry<br>drwxr-xr-x  6 root    root    58 8月   4 21:17 secret<br>drwxr-xr-x  2 root    root    56 8月  11 14:11 ssl<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 修改配置 hostname和证书dns扩展相匹配，后续所有镜像前缀均为hostname</span></span><br>cd harbor<br>cp harbor.yml.tmpl harbor.yml<br>    5 hostname: domin<br>    17 certificate: /data/harbor/ssl/tls.cert<br>    18 private_key: /data/harbor/ssl/tls.key<br>    34 harbor_admin_password: Harbor12345<br><span class="hljs-meta prompt_"> </span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 创建访问域证书(可选)</span></span><br>openssl genrsa -out tls.key 2048<br>openssl  req -new -x509 -key tls.key -out tls.cert -days 360 -subj /CN=*.bsngate.com<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 执行安装脚本</span></span><br>./install.sh<br></code></pre></td></tr></table></figure>
+
+<h4 id="现有私有仓库迁移-参考"><a href="#现有私有仓库迁移-参考" class="headerlink" title="现有私有仓库迁移(参考)"></a><strong>现有私有仓库迁移(参考)</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 下载离线安装包</span></span><br>wget https://github.com/goharbor/harbor/releases/download/v2.2.0<br>tar -xf harbor-offline-install-v2.2.0.tar.gz<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 解压文件后并拷贝目录 common、database、registry、ssl 执行install.sh</span></span><br>./install.sh<br></code></pre></td></tr></table></figure>
+
+<h3 id="2、下载kubesphere离线安装包-能上网机器上执行"><a href="#2、下载kubesphere离线安装包-能上网机器上执行" class="headerlink" title="2、下载kubesphere离线安装包(能上网机器上执行)"></a><strong>2、下载kubesphere离线安装包(能上网机器上执行)</strong></h3><h5 id="编译kk和kubeadm-证书100年，可不做"><a href="#编译kk和kubeadm-证书100年，可不做" class="headerlink" title="编译kk和kubeadm(证书100年，可不做)"></a><strong>编译kk和kubeadm(证书100年，可不做)</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## kubeadm</span></span><br>wget https://github.com/kubernetes/kubernetes/archive/refs/tags/v1.20.6.zip<br>agt-get install -y unzip<br>unzip v1.20.6.zip<br>cd kubernetes-1.20.6<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 修改证书有效性</span></span> <br>vi  cmd/kubeadm/app/constants/constants.go<br>// CertificateValidity defines the validity for all the signed certificates generated by kubeadm<br>        // CertificateValidity = time.Hour * 24 * 365<br>        CertificateValidity = time.Hour * 24 * 365 * 100<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 修改签发年限</span></span>        <br>vim staging/src/k8s.io/client-go/util/cert/cert.go<br> // NotAfter:              now.Add(duration365d * 10).UTC(),<br>                NotAfter:              now.Add(duration365d * 100).UTC(),<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 下载依赖</span></span><br>yum groupinstall &quot;Development Tools&quot;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 编译</span></span><br>make all WHAT=cmd/kubeadm GOFLAGS=-v<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 查看sha256sum</span></span><br>sha256sum kubeadm<br>3af7918faa88586d7155e778608160156740ddc48c6d85848620f37db58fac91  kubeadm<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## kubukey kk</span></span><br>git  clone https://github.com/kubesphere/kubekey.git<br>git checkout -b remotes/origin/release-1.1<br>cd kubekey/pkg/files<br>vim file.go<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 修改kubeadm sha256码为上面编译好的kubeadm码</span></span><br>&quot;v1.20.6&quot;:  &quot;3af7918faa88586d7155e778608160156740ddc48c6d85848620f37db58fac91&quot;,<br></code></pre></td></tr></table></figure>
+
+<h5 id="下载离线安装包"><a href="#下载离线安装包" class="headerlink" title="下载离线安装包"></a><strong>下载离线安装包</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 下载镜像列表</span></span><br>curl -L -O https://github.com/kubesphere/ks-installer/releases/download/v3.1.1/images-list.txt<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 下载 offline-installation-tool.sh</span></span><br>curl -L -O https://github.com/kubesphere/ks-installer/releases/download/v3.1.1/offline-installation-tool.sh<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 添加执行权限</span></span><br>chmod +x offline-installation-tool.sh<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 下载 Kubernetes 二进制文件 (替换之前编译好得kubeadm)</span></span><br>./offline-installation-tool.sh -b -v v1.20.6<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">#### 如果不能访问Google 添加环境变量</span></span><br>export KKZONE=cn;./offline-installation-tool.sh -b -v v1.20.6<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 拉取镜像</span></span><br>./offline-installation-tool.sh -s -l images-list.txt -d ./kubesphere-images<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 修改脚本换成自己仓库项目，推送到私有仓库</span></span><br>imageurl=$registryurl&quot;/library/&quot;$image  imageurl=$registryurl&quot;/kubesphere/&quot;$image <br>./offline-installation-tool.sh -l images-list.txt -d ./kubesphere-images -r harbor.ops.bsnbase.com <br></code></pre></td></tr></table></figure>
+
+<h3 id="3、离线安装kubesphere"><a href="#3、离线安装kubesphere" class="headerlink" title="3、离线安装kubesphere"></a><strong>3、离线安装kubesphere</strong></h3><h6 id="官方离线文档地址"><a href="#官方离线文档地址" class="headerlink" title="官方离线文档地址"></a><strong>官方离线文档地址</strong></h6><p><a target="_blank" rel="noopener" href="https://v3-1.docs.kubesphere.io/zh/docs/installing-on-linux/introduction/air-gapped-installation/">https://v3-1.docs.kubesphere.io/zh/docs/installing-on-linux/introduction/air-gapped-installation/</a></p>
+<h5 id="1、生成模板文件"><a href="#1、生成模板文件" class="headerlink" title="1、生成模板文件"></a><strong>1、生成模板文件</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Shell">./kk create config --with-kubernetes v1.20.6 --with-kubesphere v3.1.1 -f config.yaml<br></code></pre></td></tr></table></figure>
+
+<h5 id="2、修改配置文件"><a href="#2、修改配置文件" class="headerlink" title="2、修改配置文件"></a><strong>2、修改配置文件</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br></pre></td><td class="code"><pre><code class="hljs Shell">1、修改hosts主机配置信息<br>2、添加registry.privateRegistry 为自己私有仓库地址 privateRegistry: harbor.ops.bsnbase.com<br>3、添加gfs存储挂载路径<br>- name: glusterfs<br>    namespace: kube-system<br>    sources:<br>      yaml:<br>        path:<br>        - /root/glusterfs-sc.yaml<br>config.yaml(高可用架构)<br>apiVersion: kubekey.kubesphere.io/v1alpha1<br>kind: Cluster<br>metadata:<br>  name: bsn<br>spec:<br>  hosts:<br>  - &#123;name: master1, address: 192.168.40.120, internalAddress: 192.168.40.120, user: root, password: 123456&#125;<br>  - &#123;name: master2, address: 192.168.40.121, internalAddress: 192.168.40.121, user: root, password: 123456&#125;<br>  - &#123;name: master3, address: 192.168.40.122, internalAddress: 192.168.40.122, user: root, password: 123456&#125;<br>  - &#123;name: node1, address: 192.168.40.123, internalAddress: 192.168.40.123, user: root, password: 123456&#125;<br>  - &#123;name: node2, address: 192.168.40.124, internalAddress: 192.168.40.124, user: root, password: 123456&#125;<br>  - &#123;name: node3, address: 192.168.40.125, internalAddress: 192.168.40.125, user: root, password: 123456&#125;<br>  roleGroups:<br>    etcd:<br>    - master1<br>    - master2<br>    - master3<br>    master: <br>    - master1<br>    - master2<br>    - master3<br>    worker:<br>    - node1<br>    - node2<br>    - node3<br>  controlPlaneEndpoint:<br>    domain: lb.kubesphere.local<br>    address: &quot;192.168.40.111&quot;<br>    port: 16443<br>  kubernetes:<br>    version: v1.20.6<br>    imageRepo: kubesphere<br>    clusterName: cluster.local<br>  network:<br>    plugin: calico<br>    kubePodsCIDR: 10.233.64.0/18<br>    kubeServiceCIDR: 10.233.0.0/18<br>  registry:<br>    registryMirrors: []<br>    insecureRegistries: []<br>    privateRegistry: harbor.ops.bsnbase.com<br>  addons:<br>  - name: glusterfs<br>    namespace: kube-system<br>    sources:<br>      yaml:<br>        path:<br>        #- /root/kubesphere/glusterfs-sc.yaml<br>        - ./glusterfs-sc.yaml<br><br>---<br>apiVersion: installer.kubesphere.io/v1alpha1<br>kind: ClusterConfiguration<br>metadata:<br>  name: ks-installer<br>  namespace: kubesphere-system<br>  labels:<br>    version: v3.1.1<br>spec:<br>  persistence:<br>    storageClass: &quot;&quot;       <br>  authentication:<br>    jwtSecret: &quot;&quot;<br>  zone: &quot;&quot;<br>  local_registry: &quot;&quot;        <br>  etcd:<br>    monitoring: false      <br>    endpointIps: localhost  <br>    port: 2379             <br>    tlsEnable: true<br>  common:<br>    redis:<br>      enabled: false<br>    redisVolumSize: 2Gi <br>    openldap:<br>      enabled: false<br>    openldapVolumeSize: 2Gi  <br>    minioVolumeSize: 10Gi<br>    monitoring:<br>      endpoint: http://prometheus-operated.kubesphere-monitoring-system.svc:9090<br>    es:  <br>      elasticsearchMasterVolumeSize: 4Gi   <br>      elasticsearchDataVolumeSize: 20Gi   <br>      logMaxAge: 7          <br>      elkPrefix: logstash<br>      basicAuth:<br>        enabled: false<br>        username: &quot;&quot;<br>        password: &quot;&quot;<br>      externalElasticsearchUrl: &quot;&quot;<br>      externalElasticsearchPort: &quot;&quot;  <br>  console:<br>    enableMultiLogin: true <br>    port: 30880<br>  alerting:       <br>    enabled: false<br>    # thanosruler:<br>    #   replicas: 1<br>    #   resources: &#123;&#125;<br>  auditing:    <br>    enabled: false<br>  devops:           <br>    enabled: false<br>    jenkinsMemoryLim: 2Gi     <br>    jenkinsMemoryReq: 1500Mi <br>    jenkinsVolumeSize: 8Gi   <br>    jenkinsJavaOpts_Xms: 512m  <br>    jenkinsJavaOpts_Xmx: 512m<br>    jenkinsJavaOpts_MaxRAM: 2g<br>  events:          <br>    enabled: false<br>    ruler:<br>      enabled: true<br>      replicas: 2<br>  logging:         <br>    enabled: false<br>    logsidecar:<br>      enabled: true<br>      replicas: 2<br>  metrics_server:             <br>    enabled: false<br>  monitoring:<br>    storageClass: &quot;&quot;<br>    prometheusMemoryRequest: 400Mi  <br>    prometheusVolumeSize: 10Gi  <br>  multicluster:<br>    clusterRole: none <br>  network:<br>    networkpolicy:<br>      enabled: false<br>    ippool:<br>      type: none<br>    topology:<br>      type: none<br>  openpitrix:   ###应用商店 不需要可设置成false，安装会更快<br>    store:<br>      enabled: true<br>  servicemesh:    <br>    enabled: false  <br>  kubeedge:<br>    enabled: false<br>    cloudCore:<br>      nodeSelector: &#123;&quot;node-role.kubernetes.io/worker&quot;: &quot;&quot;&#125;<br>      tolerations: []<br>      cloudhubPort: &quot;10000&quot;<br>      cloudhubQuicPort: &quot;10001&quot;<br>      cloudhubHttpsPort: &quot;10002&quot;<br>      cloudstreamPort: &quot;10003&quot;<br>      tunnelPort: &quot;10004&quot;<br>      cloudHub:<br>        advertiseAddress: <br>          - &quot;&quot;           <br>        nodeLimit: &quot;100&quot;<br>      service:<br>        cloudhubNodePort: &quot;30000&quot;<br>        cloudhubQuicNodePort: &quot;30001&quot;<br>        cloudhubHttpsNodePort: &quot;30002&quot;<br>        cloudstreamNodePort: &quot;30003&quot;<br>        tunnelNodePort: &quot;30004&quot;<br>    edgeWatcher:<br>      nodeSelector: &#123;&quot;node-role.kubernetes.io/worker&quot;: &quot;&quot;&#125;<br>      tolerations: []<br>      edgeWatcherAgent:<br>        nodeSelector: &#123;&quot;node-role.kubernetes.io/worker&quot;: &quot;&quot;&#125;<br>        tolerations: []<br></code></pre></td></tr></table></figure>
+
+<h6 id="config-yaml-一个master，一个etcd，方便以后扩容"><a href="#config-yaml-一个master，一个etcd，方便以后扩容" class="headerlink" title="config.yaml(一个master，一个etcd，方便以后扩容)"></a><strong>config.yaml(一个master，一个etcd，方便以后扩容)</strong></h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs Shell">...<br>  hosts:<br>  - &#123;name: master1, address: 192.168.40.120, internalAddress: 192.168.40.120, user: root, password: 123456&#125;<br>  - &#123;name: node1, address: 192.168.40.123, internalAddress: 192.168.40.123, user: root, password: 123456&#125;<br>  - &#123;name: node2, address: 192.168.40.124, internalAddress: 192.168.40.124, user: root, password: 123456&#125;<br>  - &#123;name: node3, address: 192.168.40.125, internalAddress: 192.168.40.125, user: root, password: 123456&#125;<br>  roleGroups:<br>    etcd:<br>    - master1<br>    master: <br>    - master1<br>    worker:<br>    - node1<br>    - node2<br>    - node3<br>...<br><span class="hljs-meta prompt_">#</span><span class="language-bash">单节点</span><br>...<br>  controlPlaneEndpoint:<br>    domain: lb.kubesphere.local<br>    address: &quot;&quot;<br>    port: 6443<br>...<br></code></pre></td></tr></table></figure>
+
+<h6 id="glusterfs-sc-yaml"><a href="#glusterfs-sc-yaml" class="headerlink" title="glusterfs-sc.yaml"></a><strong>glusterfs-sc.yaml</strong></h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs Shell">apiVersion: v1<br>kind: Secret<br>metadata:<br>  name: heketi-secret<br>  namespace: kube-system<br>type: kubernetes.io/glusterfs<br>data:<br>  key: &quot;MTIzNDU2&quot;<br>---<br>apiVersion: storage.k8s.io/v1<br>kind: StorageClass<br>metadata:<br>  annotations:<br>    storageclass.beta.kubernetes.io/is-default-class: &quot;true&quot;<br>    storageclass.kubesphere.io/supported-access-modes: &#x27;[&quot;ReadWriteOnce&quot;,&quot;ReadOnlyMany&quot;,&quot;ReadWriteMany&quot;]&#x27;<br>  name: glusterfs<br>parameters:<br>  clusterid: &quot;4e8c9b531917d318d9e5d9d0b58e34d8&quot;<br>  gidMax: &quot;50000&quot;<br>  gidMin: &quot;40000&quot;<br>  restauthenabled: &quot;true&quot;<br>  resturl: &quot;http://192.168.40.123:8080&quot;<br>  restuser: admin<br>  secretName: heketi-secret<br>  secretNamespace: kube-system<br>  volumetype: &quot;replicate:2&quot;<br>provisioner: kubernetes.io/glusterfs<br>reclaimPolicy: Delete<br>volumeBindingMode: Immediate<br>allowVolumeExpansion: true<br></code></pre></td></tr></table></figure>
+
+<h5 id="3、启动节点"><a href="#3、启动节点" class="headerlink" title="3、启动节点"></a><strong>3、启动节点</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 多节点集群启动</span></span><br>./kk create cluster -f config.yaml<br><br>apt-get install conntrack socat -y<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 安装完成后验证</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">####################################################</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">##              Welcome to KubeSphere!           ###</span></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">####################################################</span></span><br><br>Console: http://192.168.0.2:30880<br>Account: admin<br>Password: P@88w0rd<br><br>NOTES：<br>  1. After you log into the console, please check the<br>     monitoring status of service components in<br>     the &quot;Cluster Management&quot;. If any service is not<br>     ready, please wait patiently until all components<br>     are up and running.<br>  2. Please change the default password after login.<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">####################################################</span></span><br>https://kubesphere.io             20xx-xx-xx xx:xx:xx<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">####################################################</span></span><br></code></pre></td></tr></table></figure>
+
+<h5 id="kubesphere中文文档地址"><a href="#kubesphere中文文档地址" class="headerlink" title="kubesphere中文文档地址"></a><strong>kubesphere中文文档地址</strong></h5><p><a target="_blank" rel="noopener" href="https://www.bookstack.cn/read/kubesphere-3.1-zh/807436df96a6eb8a.md">https://www.bookstack.cn/read/kubesphere-3.1-zh/807436df96a6eb8a.md</a></p>
+<h3 id="错误解决"><a href="#错误解决" class="headerlink" title="错误解决"></a><strong>错误解决</strong></h3><h5 id="1、heketi启动连不上节点错误展示及解决"><a href="#1、heketi启动连不上节点错误展示及解决" class="headerlink" title="1、heketi启动连不上节点错误展示及解决"></a><strong>1、heketi启动连不上节点错误展示及解决</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># heketi-cli topology load --json=/etc/heketi/topology.json</span></span> <br>Unable to create node: New Node doesn&#x27;t have glusterd running<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># systemctl status heketi</span></span><br>userauth_pubkey: key type ssh-rsa not in PubkeyAcceptedKeyTypes [preauth]<br><br>userauth_pubkey: key type ssh-rsa not in PubkeyAcceptedAlgorithms [preauth]<br><br>GitHub actions workflow error: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none password], no supported methods remain<br><br>cmdexec.(*CmdExecutor).Glusterd Check: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 解决方案</span></span><br>生成ssh公私钥对需要使用pem格式<br>ssh-keygen -m PEM  -q -f /etc/heketi/heketi_key -N &#x27;&#x27;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># sshd服务配置修改添加</span></span><br>PubkeyAuthentication yes<br>PubkeyAcceptedKeyTypes=+ssh-rsa<br></code></pre></td></tr></table></figure>
+
+<h5 id="2、k8s集群-ks-install-连接10-233-0-1-443-超时"><a href="#2、k8s集群-ks-install-连接10-233-0-1-443-超时" class="headerlink" title="2、k8s集群 ks-install 连接10.233.0.1:443 超时"></a><strong>2、k8s集群 ks-install 连接10.233.0.1:443 超时</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs Shell">ubuntu自带dns服务导致<br><span class="hljs-meta prompt_"># </span><span class="language-bash">关闭dns服务</span><br>systemctl stop systemd-resolved.service<br>rm -f /etc/resolv.conf<br>vim  /etc/resolv.conf<br></code></pre></td></tr></table></figure>
+
+<h5 id="3、topology中gfs地址不能使用域名"><a href="#3、topology中gfs地址不能使用域名" class="headerlink" title="3、topology中gfs地址不能使用域名"></a><strong>3、topology中gfs地址不能使用域名</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">#创建pvc报错信息</span></span><br>glusterfs server node ip address node1.sbp-gcisdctr.hksarg must be a valid IP address, (e.g. 10.9.8.7)<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Ubuntu安装kubesphere 高可用架构</div>
+      <div>http://example.com/2023/09/12/ubuntu安装kubesphere高可用/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yulong</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年9月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/09/12/Ubuntu22.04LTS%20%20%E5%AE%89%E8%A3%85%20ceph%20%E9%9B%86%E7%BE%A4/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/12/Ubuntu%20%E4%BD%BF%E7%94%A8ceph%E9%83%A8%E7%BD%B2k8s/" title="Ubuntu 使用ceph部署k8s">
+                        <span class="hidden-mobile">Ubuntu 使用ceph部署k8s</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/diy/timeDate.js"></script>
+<script src="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/metowolf/Metingjs@1.2/dist/Meting.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/caidai.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxingxing.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxuehua.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

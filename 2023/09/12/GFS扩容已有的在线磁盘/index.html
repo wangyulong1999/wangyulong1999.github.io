@@ -1,0 +1,667 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yulong">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1、GFS扩容已有的在线磁盘查看现有glusterfs磁盘使用情况 123456789heketi-cli topology info|grep -A 2000 Nodes    Nodes:    Storage Hostnames: 192.168.40.102    Devices:    Id:a92a1d705e4c5e99d08eb2081ed9d442   Name:&#x2F;dev&#x2F;sdc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GFS扩容在线磁盘">
+<meta property="og:url" content="http://example.com/2023/09/12/GFS%E6%89%A9%E5%AE%B9%E5%B7%B2%E6%9C%89%E7%9A%84%E5%9C%A8%E7%BA%BF%E7%A3%81%E7%9B%98/index.html">
+<meta property="og:site_name" content="yulong">
+<meta property="og:description" content="1、GFS扩容已有的在线磁盘查看现有glusterfs磁盘使用情况 123456789heketi-cli topology info|grep -A 2000 Nodes    Nodes:    Storage Hostnames: 192.168.40.102    Devices:    Id:a92a1d705e4c5e99d08eb2081ed9d442   Name:&#x2F;dev&#x2F;sdc">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-12T03:05:51.955Z">
+<meta property="article:modified_time" content="2023-09-12T05:57:08.946Z">
+<meta property="article:author" content="yulong">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>GFS扩容在线磁盘 - yulong</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/shubiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/toubudaziji.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/gundongtiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/shubiao.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="GFS扩容在线磁盘"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-09-12 11:05" pubdate>
+          2023年9月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          34 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">GFS扩容在线磁盘</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="1、GFS扩容已有的在线磁盘"><a href="#1、GFS扩容已有的在线磁盘" class="headerlink" title="1、GFS扩容已有的在线磁盘"></a>1、GFS扩容已有的在线磁盘</h3><p>查看现有glusterfs磁盘使用情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs Bash">heketi-cli topology info|grep -A 2000 Nodes<br><br>    Nodes:<br>    Storage Hostnames: 192.168.40.102<br>    Devices:<br>    Id:a92a1d705e4c5e99d08eb2081ed9d442   Name:/dev/sdc  State:online    Size (GiB):49      Used (GiB):46      Free (GiB):3       <br>    Storage Hostnames: 192.168.40.101<br>    Devices:<br>    Id:04d52bfab53b6ee20b1026af3a8ff39f   Name:/dev/sdc State:online    Size (GiB):99      Used (GiB):46      Free (GiB):53<br></code></pre></td></tr></table></figure>
+
+<p>   当需要将 192.168.40.102 主机的&#x2F;dev&#x2F;sdc 磁盘从50G 扩容到100G时，首先在虚拟机或者云服务器将磁盘进行动态扩容到100G</p>
+<p>此时主机磁盘虽然已经有100G 但是gfs集群仍然显示50G </p>
+<p>处理 登录扩容主机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs Bash">pvdisplay /dev/sdc<br>  --- Physical volume ---<br>  PV Name               /dev/sdc<br>  VG Name               vg_a92a1d705e4c5e99d08eb2081ed9d442<br>  PV Size               50.00 GiB / not usable 132.00 MiB<br>  Allocatable           <span class="hljs-built_in">yes</span> <br>  PE Size               4.00 MiB<br>  Total PE              12767<br>  Free PE               904<br>  Allocated PE          11863<br>  PV UUID               jXZaP5-zSG9-fRYw-oUYT-R3Cn-ddRc-PL5D9<br> 显示仍旧是50G<br> 需要动态加载pv 执行以下命令<br>pvresize /dev/sdc<br>partprobe /dev/sdc<br><br>再次查看/dev/sdc pv已经增加到100G<br>  --- Physical volume ---<br>  PV Name               /dev/sdc<br>  VG Name               vg_a92a1d705e4c5e99d08eb2081ed9d442<br>  PV Size               100.00 GiB / not usable 124.50 MiB<br>  Allocatable           <span class="hljs-built_in">yes</span> <br>  PE Size               4.00 MiB<br>  Total PE              25567<br>  Free PE               13704<br>  Allocated PE          11863<br>  PV UUID               jXZaP5-zSG9-fRYw-oUYT-R3Cn-ddRc-PL5DV9<br></code></pre></td></tr></table></figure>
+
+<p>此时heketi-cli 查看集群主机的磁盘依旧是50G</p>
+<p>处理 在heketi-cli 主机执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Bash">heketi-cli device resync a92a1d705e4c5e99d08eb2081ed9d442 <span class="hljs-comment">#此Id 为设备device ID</span><br></code></pre></td></tr></table></figure>
+
+<p>再次查看gls集群磁盘空间已经增加到100G</p>
+<h3 id="2、GFS扩容新增裸盘"><a href="#2、GFS扩容新增裸盘" class="headerlink" title="2、GFS扩容新增裸盘"></a><strong>2、GFS扩容新增裸盘</strong></h3><p>在已有机器上新增一块裸盘(&#x2F;dev&#x2F;sdc)加入gfs集群中</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs Bash">1、裸盘转换成物理卷<br><span class="hljs-comment">### pvcreate /dev/sdc</span><br>Physical volume <span class="hljs-string">&quot;/dev/sdc&quot;</span> successfully created.<br>2、在有heketi主机上执行命令<br>   通过heketi-cli topology info 查询到node <span class="hljs-built_in">id</span><br>   执行命令  <br>   heketi-cli device add --name=/dev/sdc --node=ae2cbc030855486a74ea592820dbc494<br>3、heketi-cli topology info查询node下已有新增device<br></code></pre></td></tr></table></figure>
+
+<h3 id="3、修改heketi-db数据"><a href="#3、修改heketi-db数据" class="headerlink" title="3、修改heketi.db数据"></a>3、<strong>修改heketi.db数据</strong></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs Bash">systemctl stop heketi<br><span class="hljs-comment">## db文件导出json文件，以便修改</span><br>heketi db <span class="hljs-built_in">export</span> --jsonfile=/var/lib/heketi/db.json --dbfile=/var/lib/heketi/heketi.db<br><span class="hljs-comment">## json文件导入成db文件</span><br>heketi db import  --jsonfile=/var/lib/heketi/db.json --dbfile=/var/lib/heketi/heketi.db<br></code></pre></td></tr></table></figure>
+
+<h3 id="4、heketi磁盘使用率不匹配问题"><a href="#4、heketi磁盘使用率不匹配问题" class="headerlink" title="4、heketi磁盘使用率不匹配问题"></a>4、heketi磁盘使用率不匹配问题</h3><h6 id="1、登录到-Heketi-pod-并获取节点列表。"><a href="#1、登录到-Heketi-pod-并获取节点列表。" class="headerlink" title="1、登录到 Heketi pod 并获取节点列表。"></a>1、登录到 Heketi pod 并获取节点列表。</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Plain">heketi-cli --user admin --secret admin node list<br></code></pre></td></tr></table></figure>
+
+<p>命令输出</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs Plain">Id:10cc13f4cd18136fc9b6d2a6d1eac733     Cluster:34fe224a09d8022a3582da817c31a81b<br>Id:157012bb7b0391b2c116b35de8d6e7ba     Cluster:34fe224a09d8022a3582da817c31a81b<br>Id:95c72d452bc2c21b3a1e2fa87e63f902     Cluster:34fe224a09d8022a3582da817c31a81b<br></code></pre></td></tr></table></figure>
+
+<h6 id="2、获取有关节点上设备的信息。针对每个节点重复此步骤。"><a href="#2、获取有关节点上设备的信息。针对每个节点重复此步骤。" class="headerlink" title="2、获取有关节点上设备的信息。针对每个节点重复此步骤。"></a>2、获取有关节点上设备的信息。针对每个节点重复此步骤。</h6><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">heketi<span class="hljs-operator">-</span>cli <span class="hljs-comment">--user admin --secret admin node info &lt;node-ID&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>命令输出</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs SQL">Node Id: <span class="hljs-number">10</span>cc13f4cd18136fc9b6d2a6d1eac733<br>State: online<br>Cluster Id: <span class="hljs-number">34</span>fe224a09d8022a3582da817c31a81b<br>Zone: <span class="hljs-number">1</span><br>Management Hostname: <span class="hljs-number">10.41</span><span class="hljs-number">.4</span><span class="hljs-number">.108</span><br>Storage Hostname: <span class="hljs-number">10.41</span><span class="hljs-number">.4</span><span class="hljs-number">.108</span><br>Devices:<br>Id:c7e93cd3d3d293a78dfb99cb2809f699   Name:<span class="hljs-operator">/</span>dev<span class="hljs-operator">/</span>disk<span class="hljs-operator">/</span><span class="hljs-keyword">by</span><span class="hljs-operator">-</span>path<span class="hljs-operator">/</span>virtio<span class="hljs-operator">-</span>pci<span class="hljs-number">-0000</span>_00_11_0 State:online    Size (GiB):<span class="hljs-number">699</span>      Used (GiB):<span class="hljs-number">497</span>       <span class="hljs-keyword">Free</span> (GiB):<span class="hljs-number">202</span><br>           Bricks:<br>                     Id:<span class="hljs-number">33</span>cb391e0113ec96ccc546a4e4288018   Size (GiB):<span class="hljs-number">100</span>     Path: <span class="hljs-operator">/</span>var<span class="hljs-operator">/</span>lib<span class="hljs-operator">/</span>heketi<span class="hljs-operator">/</span>mounts<span class="hljs-operator">/</span>vg_d991f7315d9e13f9ef4d8044cd474569<span class="hljs-operator">/</span>brick_33cb391e0113ec96ccc546a4e4288018<span class="hljs-operator">/</span>brick<br>                     Id:<span class="hljs-number">41</span>a508db035b042b1d35839f0d40f0c5   Size (GiB):<span class="hljs-number">20</span>     Path: <span class="hljs-operator">/</span>var<span class="hljs-operator">/</span>lib<span class="hljs-operator">/</span>heketi<span class="hljs-operator">/</span>mounts<span class="hljs-operator">/</span>vg_d991f7315d9e13f9ef4d8044cd474569<span class="hljs-operator">/</span>brick_41a508db035b042b1d35839f0d40f0c5<span class="hljs-operator">/</span>brick<br></code></pre></td></tr></table></figure>
+
+<h6 id="3、获取有关设备上磁盘使用率的信息。针对每个节点上的每个设备重复此步骤。"><a href="#3、获取有关设备上磁盘使用率的信息。针对每个节点上的每个设备重复此步骤。" class="headerlink" title="3、获取有关设备上磁盘使用率的信息。针对每个节点上的每个设备重复此步骤。"></a>3、获取有关设备上磁盘使用率的信息。针对每个节点上的每个设备重复此步骤。</h6><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">heketi<span class="hljs-operator">-</span>cli <span class="hljs-comment">--user admin --secret admin device info &lt;device-ID&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>命令输出</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs SQL">Device Id: c7e93cd3d3d293a78dfb99cb2809f699<br>Name: <span class="hljs-operator">/</span>dev<span class="hljs-operator">/</span>disk<span class="hljs-operator">/</span><span class="hljs-keyword">by</span><span class="hljs-operator">-</span>path<span class="hljs-operator">/</span>virtio<span class="hljs-operator">-</span>pci<span class="hljs-number">-0000</span>_00_11_0<br>State: online<br>Size (GiB): <span class="hljs-number">699</span><br>Used (GiB): <span class="hljs-number">497</span><br><span class="hljs-keyword">Free</span> (GiB): <span class="hljs-number">202</span><br>Bricks:<br>Id:<span class="hljs-number">33</span>cb391e0113ec96ccc546a4e4288018   Size (GiB):<span class="hljs-number">100</span>     Path: <span class="hljs-operator">/</span>var<span class="hljs-operator">/</span>lib<span class="hljs-operator">/</span>heketi<span class="hljs-operator">/</span>mounts<span class="hljs-operator">/</span>vg_d991f7315d9e13f9ef4d8044cd474569<span class="hljs-operator">/</span>brick_33cb391e0113ec96ccc546a4e4288018<span class="hljs-operator">/</span>brick<br>Id:<span class="hljs-number">41</span>a508db035b042b1d35839f0d40f0c5   Size (GiB):<span class="hljs-number">20</span>     Path: <span class="hljs-operator">/</span>var<span class="hljs-operator">/</span>lib<span class="hljs-operator">/</span>heketi<span class="hljs-operator">/</span>mounts<span class="hljs-operator">/</span>vg_d991f7315d9e13f9ef4d8044cd474569<span class="hljs-operator">/</span>brick_41a508db035b042b1d35839f0d40f0c5<span class="hljs-operator">/</span>brick<br></code></pre></td></tr></table></figure>
+
+<h6 id="4、同步设备以反映实际磁盘使用率。针对每个节点上的每个设备重复此步骤。"><a href="#4、同步设备以反映实际磁盘使用率。针对每个节点上的每个设备重复此步骤。" class="headerlink" title="4、同步设备以反映实际磁盘使用率。针对每个节点上的每个设备重复此步骤。"></a>4、同步设备以反映实际磁盘使用率。针对每个节点上的每个设备重复此步骤。</h6><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">heketi<span class="hljs-operator">-</span>cli <span class="hljs-comment">--user admin --secret admin device resync &lt;device-ID&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>命令输出</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">Device  updated<br></code></pre></td></tr></table></figure>
+
+<h6 id="5、验证已同步磁盘使用率信息。"><a href="#5、验证已同步磁盘使用率信息。" class="headerlink" title="5、验证已同步磁盘使用率信息。"></a>5、验证已同步磁盘使用率信息。</h6><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">heketi<span class="hljs-operator">-</span>cli <span class="hljs-comment">--user admin --secret admin device info &lt;device-ID&gt;</span><br></code></pre></td></tr></table></figure>
+
+<p>命令输出</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs SQL">Device Id: c7e93cd3d3d293a78dfb99cb2809f699<br>Name: <span class="hljs-operator">/</span>dev<span class="hljs-operator">/</span>disk<span class="hljs-operator">/</span><span class="hljs-keyword">by</span><span class="hljs-operator">-</span>path<span class="hljs-operator">/</span>virtio<span class="hljs-operator">-</span>pci<span class="hljs-number">-0000</span>_00_11_0<br>State: online<br>Size (GiB): <span class="hljs-number">699</span><br>Used (GiB): <span class="hljs-number">120</span><br><span class="hljs-keyword">Free</span> (GiB): <span class="hljs-number">579</span><br>Bricks:<br>Id:<span class="hljs-number">33</span>cb391e0113ec96ccc546a4e4288018   Size (GiB):<span class="hljs-number">100</span>     Path: <span class="hljs-operator">/</span>var<span class="hljs-operator">/</span>lib<span class="hljs-operator">/</span>heketi<span class="hljs-operator">/</span>mounts<span class="hljs-operator">/</span>vg_d991f7315d9e13f9ef4d8044cd474569<span class="hljs-operator">/</span>brick_33cb391e0113ec96ccc546a4e4288018<span class="hljs-operator">/</span>brick<br>Id:<span class="hljs-number">41</span>a508db035b042b1d35839f0d40f0c5   Size (GiB):<span class="hljs-number">20</span>     Path: <span class="hljs-operator">/</span>var<span class="hljs-operator">/</span>lib<span class="hljs-operator">/</span>heketi<span class="hljs-operator">/</span>mounts<span class="hljs-operator">/</span>vg_d991f7315d9e13f9ef4d8044cd474569<span class="hljs-operator">/</span>brick_41a508db035b042b1d35839f0d40f0c5<span class="hljs-operator">/</span>brick<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>GFS扩容在线磁盘</div>
+      <div>http://example.com/2023/09/12/GFS扩容已有的在线磁盘/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yulong</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年9月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/12/Ubuntu22.04LTS%20%20%E5%AE%89%E8%A3%85%20ceph%20%E9%9B%86%E7%BE%A4/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/diy/timeDate.js"></script>
+<script src="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/metowolf/Metingjs@1.2/dist/Meting.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/caidai.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxingxing.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxuehua.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

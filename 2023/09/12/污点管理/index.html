@@ -16,21 +16,21 @@
   <meta name="author" content="yulong">
   <meta name="keywords" content="">
   
-    <meta name="description" content="12345678910111213141516171819202122lit &#x3D; [&quot;123&quot;,123,True,]lit.append(&quot;abc&quot;)     #列表增加 追加lit.insert(1,&quot;wang&quot;)  #插入lit.extend(&quot;wang&quot;)    #迭代添加#列表删除lit.pop()print(">
+    <meta name="description" content="污点管理要让一个服务永远调度到一台机器并且不允许其他服务调度到这台机器，可以使用以下两个Kubernetes功能配合完成:  Node Selector:  使用NodeSelector字段指定部署Pod的节点，只有符合条件的节点才会被选中。可以在Deployment或者StatefulSet的spec.template.spec.nodeSelector字段中添加标签选择条件，例如： 12345">
 <meta property="og:type" content="article">
-<meta property="og:title" content="列表">
-<meta property="og:url" content="http://example.com/2022/07/27/6.%E5%88%97%E8%A1%A8/index.html">
+<meta property="og:title" content="污点管理">
+<meta property="og:url" content="http://example.com/2023/09/12/%E6%B1%A1%E7%82%B9%E7%AE%A1%E7%90%86/index.html">
 <meta property="og:site_name" content="yulong">
-<meta property="og:description" content="12345678910111213141516171819202122lit &#x3D; [&quot;123&quot;,123,True,]lit.append(&quot;abc&quot;)     #列表增加 追加lit.insert(1,&quot;wang&quot;)  #插入lit.extend(&quot;wang&quot;)    #迭代添加#列表删除lit.pop()print(">
+<meta property="og:description" content="污点管理要让一个服务永远调度到一台机器并且不允许其他服务调度到这台机器，可以使用以下两个Kubernetes功能配合完成:  Node Selector:  使用NodeSelector字段指定部署Pod的节点，只有符合条件的节点才会被选中。可以在Deployment或者StatefulSet的spec.template.spec.nodeSelector字段中添加标签选择条件，例如： 12345">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-07-27T02:11:30.103Z">
-<meta property="article:modified_time" content="2022-10-12T07:03:02.520Z">
+<meta property="article:published_time" content="2023-09-12T02:58:21.083Z">
+<meta property="article:modified_time" content="2023-09-12T02:59:15.787Z">
 <meta property="article:author" content="yulong">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>列表 - yulong</title>
+  <title>污点管理 - yulong</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -203,7 +203,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="列表"></span>
+            <span id="subtitle" data-typed-text="污点管理"></span>
           
         </div>
 
@@ -214,8 +214,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-07-27 10:11" pubdate>
-          2022年7月27日 上午
+        <time datetime="2023-09-12 10:58" pubdate>
+          2023年9月12日 上午
         </time>
       </span>
     
@@ -226,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          717 字
+          1.5k 字
         
       </span>
     
@@ -237,7 +237,7 @@
         
         
         
-          6 分钟
+          13 分钟
         
       </span>
     
@@ -275,17 +275,38 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">列表</h1>
+            <h1 style="display: none">污点管理</h1>
             
             
               <div class="markdown-body">
                 
-                <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs python">lit = [<span class="hljs-string">&quot;123&quot;</span>,<span class="hljs-number">123</span>,<span class="hljs-literal">True</span>,]<br><br>lit.append(<span class="hljs-string">&quot;abc&quot;</span>)     <span class="hljs-comment">#列表增加 追加</span><br>lit.insert(<span class="hljs-number">1</span>,<span class="hljs-string">&quot;wang&quot;</span>)  <span class="hljs-comment">#插入</span><br>lit.extend(<span class="hljs-string">&quot;wang&quot;</span>)    <span class="hljs-comment">#迭代添加</span><br><br><span class="hljs-comment">#列表删除</span><br>lit.pop()<br><span class="hljs-built_in">print</span>(lit)         <span class="hljs-comment"># 默认删除最后一个索引</span><br>lit.pop(<span class="hljs-number">0</span>)         <span class="hljs-comment"># 可以指定索引值进行删除</span><br>lit.remove(<span class="hljs-string">&quot;123&quot;</span>)  <span class="hljs-comment">#通过元素名字进行删除 多个元素值相同默认删除第一个</span><br><span class="hljs-keyword">del</span> lit[:<span class="hljs-number">2</span>]        <span class="hljs-comment">#通过切片删除</span><br><span class="hljs-keyword">del</span> lit[<span class="hljs-number">0</span>]         <span class="hljs-comment">#通过索引删除</span><br><span class="hljs-keyword">del</span> lit[::<span class="hljs-number">2</span>]       <span class="hljs-comment">#通过步长删除</span><br>lit.clear()        <span class="hljs-comment">#清空</span><br><br><span class="hljs-comment">#列表改</span><br>lit[<span class="hljs-number">0</span>] = <span class="hljs-string">&quot;wang&quot;</span>                 <span class="hljs-comment">#通过索引修改</span><br>lit[::] = <span class="hljs-literal">True</span>,<span class="hljs-number">123</span>,<span class="hljs-string">&quot;1234&quot;</span>,<span class="hljs-number">666</span>   <span class="hljs-comment">#通过步长修改</span><br><br><span class="hljs-comment">#列表查</span><br><span class="hljs-built_in">print</span>(lit[::])                   <span class="hljs-comment">#通过切片查看</span><br></code></pre></td></tr></table></figure>
+                <h1 id="污点管理"><a href="#污点管理" class="headerlink" title="污点管理"></a>污点管理</h1><p>要让一个服务永远调度到一台机器并且不允许其他服务调度到这台机器，可以使用以下两个Kubernetes功能配合完成:</p>
+<ol>
+<li>Node Selector:</li>
+</ol>
+<p>使用NodeSelector字段指定部署Pod的节点，只有符合条件的节点才会被选中。可以在Deployment或者StatefulSet的spec.template.spec.nodeSelector字段中添加标签选择条件，例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs SQL">apiVersion: apps<span class="hljs-operator">/</span>v1<br>kind: Deployment<br>metadata:<br>  name: my<span class="hljs-operator">-</span>deployment<br>spec:<br>  replicas: <span class="hljs-number">3</span><br>  selector:<br>    matchLabels:<br>      app: my<span class="hljs-operator">-</span>app<br>  template:<br>    metadata:<br>      labels:<br>        app: my<span class="hljs-operator">-</span>app<br>    spec:<br>      nodeSelector:<br>        disktype: ssd<br>      containers:<br>        <span class="hljs-operator">-</span> name: my<span class="hljs-operator">-</span>container<br>          image: nginx<br></code></pre></td></tr></table></figure>
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python">\\列表嵌套<br>lit = [<span class="hljs-string">&quot;123&quot;</span>,<span class="hljs-literal">True</span>,[<span class="hljs-string">&quot;wang&quot;</span>,<span class="hljs-string">&quot;yu&quot;</span>,[<span class="hljs-string">&quot;long&quot;</span>,[<span class="hljs-string">&quot;hello&quot;</span>,]]]]<br><span class="hljs-built_in">print</span>(lit[<span class="hljs-number">2</span>][-<span class="hljs-number">1</span>][-<span class="hljs-number">1</span>])<br><br>D:\python3<span class="hljs-number">.8</span>\python.exe D:/python学习/day4.py<br>[<span class="hljs-string">&#x27;hello&#x27;</span>]<br><br></code></pre></td></tr></table></figure>
+<ol>
+<li>Taints and Tolerations:</li>
+</ol>
+<p>一个Taint是对一个Node的约束条件，保证只有符合该条件的Pod才能被部署到该Node上。而Toleration则是对这些Taint的容忍程度，告诉Scheduler 可以将哪些Pod 调度到拥有这个Taint 的 Node 上。</p>
+<p>下面是一个添加污点的例子：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">kubectl taint nodes <span class="hljs-operator">&lt;</span>node<span class="hljs-operator">-</span>name<span class="hljs-operator">&gt;</span> key<span class="hljs-operator">=</span><span class="hljs-keyword">value</span>:taint<span class="hljs-operator">-</span>effect<br></code></pre></td></tr></table></figure>
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">\\元组<br><span class="hljs-comment">#元组</span><br><span class="hljs-comment">#元组是个不可变的列表</span><br>num = (<span class="hljs-number">1</span>,<span class="hljs-literal">True</span>,[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,],<span class="hljs-string">&quot;123&quot;</span>)<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> num:<br>    <span class="hljs-built_in">print</span>(i)<br></code></pre></td></tr></table></figure>
+<ul>
+<li><code>&lt;node-name&gt;</code>是要添加污点的节点名称。</li>
+<li><code>key=value</code>是用户自定义的键值对，用于设定污点的类型。</li>
+<li><code>taint-effect</code> 表示污点效应，它有三种设置：NoSchedule、PreferNoSchedule和 NoExecute。</li>
+</ul>
+<p>下面是一个添加了污点的节点的例子：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs SQL">kubectl taint nodes node1 app<span class="hljs-operator">=</span>nginx:NoSchedule<br></code></pre></td></tr></table></figure>
 
+<p>这个命令告诉Kubernetes，node1这个节点上有一个”app&#x3D;nginx”的Taint（污点），它的效应是NoSchedule。这样，即使Scheduler希望在该节点上调度Pod，只要该Pod没有对这个Taint的容忍，它就不能被调度到这个节点。</p>
+<p>在Deployment或者StatefulSet的spec.template.spec.tolerations字段中可以设置某个Pod对Taint的容忍条件，例如：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs SQL">apiVersion: apps<span class="hljs-operator">/</span>v1<br>kind: Deployment<br>metadata:<br>  name: my<span class="hljs-operator">-</span>deployment<br>spec:<br>  replicas: <span class="hljs-number">3</span><br>  selector:<br>    matchLabels:<br>      app: my<span class="hljs-operator">-</span>app<br>  template:<br>    metadata:<br>      labels:<br>        app: my<span class="hljs-operator">-</span>app<br>    spec:<br>      tolerations:<br>      <span class="hljs-operator">-</span> key: &quot;app&quot;<br>        operator: &quot;Equal&quot;<br>        <span class="hljs-keyword">value</span>: &quot;nginx&quot;<br>        effect: &quot;NoSchedule&quot;<br>      containers:<br>        <span class="hljs-operator">-</span> name: my<span class="hljs-operator">-</span>container<br>          image: nginx<br></code></pre></td></tr></table></figure>
+
+<p>这个例子中，在Pod的spec.tolerations字段中添加了一条用于拉起Nginx的容忍规则，来允许Pod被部署到node1上。这样，只要Pod包含与Taint中定义的键和值匹配的容忍项，就可以被Scheduler调度到这个节点上执行部署。</p>
 
                 
               </div>
@@ -303,8 +324,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>列表</div>
-      <div>http://example.com/2022/07/27/6.列表/</div>
+      <div>污点管理</div>
+      <div>http://example.com/2023/09/12/污点管理/</div>
     </div>
     <div class="license-meta">
       
@@ -316,7 +337,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年7月27日</div>
+          <div>2023年9月12日</div>
         </div>
       
       
@@ -348,9 +369,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/09/07/%E7%A6%BB%E7%BA%BF%E5%AE%89%E8%A3%85kubesphere%20%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84-%E4%BB%B2%E8%A3%81%E5%8D%B7/" title="kubernets安装高可用，仲裁卷">
+                      <a href="/2023/09/12/Ubuntu%20%E4%BD%BF%E7%94%A8ceph%E9%83%A8%E7%BD%B2k8s/" title="Ubuntu 使用ceph部署k8s">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">kubernets安装高可用，仲裁卷</span>
+                        <span class="hidden-mobile">Ubuntu 使用ceph部署k8s</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -358,8 +379,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/07/14/5.%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%B4%A2%E5%BC%95-%E6%95%B4%E5%BD%A2%E5%92%8C%E5%B8%83%E5%B0%94%E5%80%BC%E8%BD%AC%E6%8D%A2/" title="字符串">
-                        <span class="hidden-mobile">字符串</span>
+                      <a href="/2023/09/12/Ubuntu%E5%AE%89%E8%A3%85NFS%E5%AD%98%E5%82%A8/" title="Ubuntu安装NFS存储(k8s)">
+                        <span class="hidden-mobile">Ubuntu安装NFS存储(k8s)</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

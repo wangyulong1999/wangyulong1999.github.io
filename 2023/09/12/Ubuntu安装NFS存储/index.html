@@ -16,21 +16,21 @@
   <meta name="author" content="yulong">
   <meta name="keywords" content="">
   
-    <meta name="description" content="12345678910111213141516171819202122lit &#x3D; [&quot;123&quot;,123,True,]lit.append(&quot;abc&quot;)     #列表增加 追加lit.insert(1,&quot;wang&quot;)  #插入lit.extend(&quot;wang&quot;)    #迭代添加#列表删除lit.pop()print(">
+    <meta name="description" content="Ubuntu安装NFS存储(k8s)服务器A是192.168.49.160　　作为服务端 服务器B是192.168.50.123　　作为客户端 1、搭建服务端12345678910111213141516# 安装nfs-serverapt-get install nfs-kernel-server -y# 创建共享文件夹sudo mkdir &#x2F;home&#x2F;nfsfile　　# 创建一个共享文件夹su">
 <meta property="og:type" content="article">
-<meta property="og:title" content="列表">
-<meta property="og:url" content="http://example.com/2022/07/27/6.%E5%88%97%E8%A1%A8/index.html">
+<meta property="og:title" content="Ubuntu安装NFS存储(k8s)">
+<meta property="og:url" content="http://example.com/2023/09/12/Ubuntu%E5%AE%89%E8%A3%85NFS%E5%AD%98%E5%82%A8/index.html">
 <meta property="og:site_name" content="yulong">
-<meta property="og:description" content="12345678910111213141516171819202122lit &#x3D; [&quot;123&quot;,123,True,]lit.append(&quot;abc&quot;)     #列表增加 追加lit.insert(1,&quot;wang&quot;)  #插入lit.extend(&quot;wang&quot;)    #迭代添加#列表删除lit.pop()print(">
+<meta property="og:description" content="Ubuntu安装NFS存储(k8s)服务器A是192.168.49.160　　作为服务端 服务器B是192.168.50.123　　作为客户端 1、搭建服务端12345678910111213141516# 安装nfs-serverapt-get install nfs-kernel-server -y# 创建共享文件夹sudo mkdir &#x2F;home&#x2F;nfsfile　　# 创建一个共享文件夹su">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-07-27T02:11:30.103Z">
-<meta property="article:modified_time" content="2022-10-12T07:03:02.520Z">
+<meta property="article:published_time" content="2023-09-12T02:57:03.862Z">
+<meta property="article:modified_time" content="2023-09-12T02:58:06.982Z">
 <meta property="article:author" content="yulong">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>列表 - yulong</title>
+  <title>Ubuntu安装NFS存储(k8s) - yulong</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -203,7 +203,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="列表"></span>
+            <span id="subtitle" data-typed-text="Ubuntu安装NFS存储(k8s)"></span>
           
         </div>
 
@@ -214,8 +214,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-07-27 10:11" pubdate>
-          2022年7月27日 上午
+        <time datetime="2023-09-12 10:57" pubdate>
+          2023年9月12日 上午
         </time>
       </span>
     
@@ -226,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          717 字
+          1.6k 字
         
       </span>
     
@@ -237,7 +237,7 @@
         
         
         
-          6 分钟
+          14 分钟
         
       </span>
     
@@ -275,18 +275,28 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">列表</h1>
+            <h1 style="display: none">Ubuntu安装NFS存储(k8s)</h1>
             
             
               <div class="markdown-body">
                 
-                <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs python">lit = [<span class="hljs-string">&quot;123&quot;</span>,<span class="hljs-number">123</span>,<span class="hljs-literal">True</span>,]<br><br>lit.append(<span class="hljs-string">&quot;abc&quot;</span>)     <span class="hljs-comment">#列表增加 追加</span><br>lit.insert(<span class="hljs-number">1</span>,<span class="hljs-string">&quot;wang&quot;</span>)  <span class="hljs-comment">#插入</span><br>lit.extend(<span class="hljs-string">&quot;wang&quot;</span>)    <span class="hljs-comment">#迭代添加</span><br><br><span class="hljs-comment">#列表删除</span><br>lit.pop()<br><span class="hljs-built_in">print</span>(lit)         <span class="hljs-comment"># 默认删除最后一个索引</span><br>lit.pop(<span class="hljs-number">0</span>)         <span class="hljs-comment"># 可以指定索引值进行删除</span><br>lit.remove(<span class="hljs-string">&quot;123&quot;</span>)  <span class="hljs-comment">#通过元素名字进行删除 多个元素值相同默认删除第一个</span><br><span class="hljs-keyword">del</span> lit[:<span class="hljs-number">2</span>]        <span class="hljs-comment">#通过切片删除</span><br><span class="hljs-keyword">del</span> lit[<span class="hljs-number">0</span>]         <span class="hljs-comment">#通过索引删除</span><br><span class="hljs-keyword">del</span> lit[::<span class="hljs-number">2</span>]       <span class="hljs-comment">#通过步长删除</span><br>lit.clear()        <span class="hljs-comment">#清空</span><br><br><span class="hljs-comment">#列表改</span><br>lit[<span class="hljs-number">0</span>] = <span class="hljs-string">&quot;wang&quot;</span>                 <span class="hljs-comment">#通过索引修改</span><br>lit[::] = <span class="hljs-literal">True</span>,<span class="hljs-number">123</span>,<span class="hljs-string">&quot;1234&quot;</span>,<span class="hljs-number">666</span>   <span class="hljs-comment">#通过步长修改</span><br><br><span class="hljs-comment">#列表查</span><br><span class="hljs-built_in">print</span>(lit[::])                   <span class="hljs-comment">#通过切片查看</span><br></code></pre></td></tr></table></figure>
+                <h1 id="Ubuntu安装NFS存储-k8s"><a href="#Ubuntu安装NFS存储-k8s" class="headerlink" title="Ubuntu安装NFS存储(k8s)"></a>Ubuntu安装NFS存储(k8s)</h1><p><strong>服务器A是192.168.49.160　　作为服务端</strong></p>
+<p><strong>服务器B是192.168.50.123　　作为客户端</strong></p>
+<h3 id="1、搭建服务端"><a href="#1、搭建服务端" class="headerlink" title="1、搭建服务端"></a>1、搭建服务端</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs SQL"># 安装nfs<span class="hljs-operator">-</span>server<br>apt<span class="hljs-operator">-</span><span class="hljs-keyword">get</span> install nfs<span class="hljs-operator">-</span>kernel<span class="hljs-operator">-</span>server <span class="hljs-operator">-</span>y<br># 创建共享文件夹<br>sudo mkdir <span class="hljs-operator">/</span>home<span class="hljs-operator">/</span>nfsfile　　# 创建一个共享文件夹<br>sudo chown <span class="hljs-operator">-</span>Rf <span class="hljs-number">777</span> <span class="hljs-operator">/</span>home<span class="hljs-operator">/</span>nfsfile<br><br># 修改配置参数文件<br>vim <span class="hljs-operator">/</span>etc<span class="hljs-operator">/</span>exports　<br><span class="hljs-operator">/</span>home<span class="hljs-operator">/</span>nfsfile <span class="hljs-operator">*</span>(rw,no_root_squash,sync)<br><br># 启动服务<br>sudo systemctl enable nfs<span class="hljs-operator">-</span>server<br>sudo systemctl <span class="hljs-keyword">start</span> nfs<span class="hljs-operator">-</span>server　<br><br># 查看服务<br>sudo systemctl status nfs<span class="hljs-operator">-</span>server<br></code></pre></td></tr></table></figure>
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python">\\列表嵌套<br>lit = [<span class="hljs-string">&quot;123&quot;</span>,<span class="hljs-literal">True</span>,[<span class="hljs-string">&quot;wang&quot;</span>,<span class="hljs-string">&quot;yu&quot;</span>,[<span class="hljs-string">&quot;long&quot;</span>,[<span class="hljs-string">&quot;hello&quot;</span>,]]]]<br><span class="hljs-built_in">print</span>(lit[<span class="hljs-number">2</span>][-<span class="hljs-number">1</span>][-<span class="hljs-number">1</span>])<br><br>D:\python3<span class="hljs-number">.8</span>\python.exe D:/python学习/day4.py<br>[<span class="hljs-string">&#x27;hello&#x27;</span>]<br><br></code></pre></td></tr></table></figure>
+<h3 id="2、搭建客户端"><a href="#2、搭建客户端" class="headerlink" title="2、搭建客户端"></a>2、搭建客户端</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs SQL"># 安装软件<br>apt<span class="hljs-operator">-</span><span class="hljs-keyword">get</span> install nfs<span class="hljs-operator">-</span>common <span class="hljs-operator">-</span>y<br><br># 创建文件夹验证<br>mkdir .<span class="hljs-operator">/</span>nfsfile    # 在当前目录下创建一个nfsfile<br><br># 挂载<br>sudo mount <span class="hljs-operator">-</span>t nfs <span class="hljs-number">192.168</span><span class="hljs-number">.49</span><span class="hljs-number">.160</span>:<span class="hljs-operator">/</span>home<span class="hljs-operator">/</span>nfsfile .<span class="hljs-operator">/</span>nfsfile  #把远程的nfsfile挂载到自己的<br><br># 查看 df <span class="hljs-operator">-</span>h可以找到<br></code></pre></td></tr></table></figure>
 
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python">\\元组<br><span class="hljs-comment">#元组</span><br><span class="hljs-comment">#元组是个不可变的列表</span><br>num = (<span class="hljs-number">1</span>,<span class="hljs-literal">True</span>,[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,],<span class="hljs-string">&quot;123&quot;</span>)<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> num:<br>    <span class="hljs-built_in">print</span>(i)<br></code></pre></td></tr></table></figure>
+<h3 id="3、pv和pvc验证"><a href="#3、pv和pvc验证" class="headerlink" title="3、pv和pvc验证"></a>3、pv和pvc验证</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs SQL"># pv<br>cat <span class="hljs-operator">&gt;&gt;</span> nfs<span class="hljs-operator">-</span>pv<span class="hljs-operator">-</span>test.yaml <span class="hljs-operator">&lt;&lt;</span>EOF<br>apiVersion: v1<br>kind: PersistentVolume<br>metadata:<br>  name: nfs<span class="hljs-operator">-</span>pv001<br>  labels:<br>    pv: nfs<span class="hljs-operator">-</span>pv001<br>spec:<br>  capacity:<br>    storage: <span class="hljs-number">10</span>Gi<br>  accessModes:<br>    <span class="hljs-operator">-</span> ReadWriteMany<br>  persistentVolumeReclaimPolicy: Recycle<br>  storageClassName: nfs<br>  nfs:<br>    path: <span class="hljs-operator">/</span>home<span class="hljs-operator">/</span>nfsfile<br>    server: <span class="hljs-number">192.168</span><span class="hljs-number">.49</span><span class="hljs-number">.160</span><br>EOF<br><br># pvc<br>cat <span class="hljs-operator">&gt;&gt;</span>nfs<span class="hljs-operator">-</span>pvc<span class="hljs-operator">-</span>test.yaml <span class="hljs-operator">&lt;&lt;</span>EOF<br>apiVersion: v1<br>kind: PersistentVolumeClaim<br>metadata:<br>  name: nfs<span class="hljs-operator">-</span>pvc<br>  namespace: <span class="hljs-keyword">default</span><br>spec:<br>  accessModes:<br>    <span class="hljs-operator">-</span> ReadWriteMany<br>  resources:<br>    requests:<br>      storage: <span class="hljs-number">50</span>Mi  #容量<br>  selector:<br>    matchLabels:<br>      pv: nfs<span class="hljs-operator">-</span>pv001   #关联pv 的label,key<span class="hljs-operator">/</span><span class="hljs-keyword">value</span>要一致<br>  storageClassName: nfs<br>EOF<br></code></pre></td></tr></table></figure>
 
+<p>#####  PV 的访问模式（accessModes）有三种：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs SQL">ReadWriteOnce（RWO）：是最基本的方式，可读可写，但只支持被单个 Pod 挂载。<br>ReadOnlyMany（ROX）：可以以只读的方式被多个 Pod 挂载。<br>ReadWriteMany（RWX）：这种存储可以以读写的方式被多个 Pod 共享。<br></code></pre></td></tr></table></figure>
 
+<h6 id="PV-的回收策略（persistentVolumeReclaimPolicy，即-PVC-释放卷的时候-PV-该如何操作）也有三种："><a href="#PV-的回收策略（persistentVolumeReclaimPolicy，即-PVC-释放卷的时候-PV-该如何操作）也有三种：" class="headerlink" title="PV 的回收策略（persistentVolumeReclaimPolicy，即 PVC 释放卷的时候 PV 该如何操作）也有三种："></a>PV 的回收策略（persistentVolumeReclaimPolicy，即 PVC 释放卷的时候 PV 该如何操作）也有三种：</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs Plain">保留 Volume（需要手动清理）<br></code></pre></td></tr></table></figure>
+
+<p>Recycle，删除数据，即 rm -rf &#x2F;volume&#x2F;*（只有 NFS 和 HostPath 支持）</p>
+<p>Delete，删除存储资源，比如删除 AWS EBS 卷（只有 AWS EBS, GCE PD, Azure Disk 和 Cinder 支持）</p>
+<p>PVC释放卷是指用户删除一个PVC对象时，那么与该PVC对象绑定的PV就会被释放。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs SQL">PersistentVolume有四种状态：<br><br>Available: 可用状态<br>Bound: 绑定到PVC<br>Released: PVC被删掉，但是尚未回收<br>Failed : 自动回收失败<br></code></pre></td></tr></table></figure>
                 
               </div>
             
@@ -303,8 +313,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>列表</div>
-      <div>http://example.com/2022/07/27/6.列表/</div>
+      <div>Ubuntu安装NFS存储(k8s)</div>
+      <div>http://example.com/2023/09/12/Ubuntu安装NFS存储/</div>
     </div>
     <div class="license-meta">
       
@@ -316,7 +326,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年7月27日</div>
+          <div>2023年9月12日</div>
         </div>
       
       
@@ -348,9 +358,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/09/07/%E7%A6%BB%E7%BA%BF%E5%AE%89%E8%A3%85kubesphere%20%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84-%E4%BB%B2%E8%A3%81%E5%8D%B7/" title="kubernets安装高可用，仲裁卷">
+                      <a href="/2023/09/12/%E6%B1%A1%E7%82%B9%E7%AE%A1%E7%90%86/" title="污点管理">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">kubernets安装高可用，仲裁卷</span>
+                        <span class="hidden-mobile">污点管理</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -358,8 +368,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/07/14/5.%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%B4%A2%E5%BC%95-%E6%95%B4%E5%BD%A2%E5%92%8C%E5%B8%83%E5%B0%94%E5%80%BC%E8%BD%AC%E6%8D%A2/" title="字符串">
-                        <span class="hidden-mobile">字符串</span>
+                      <a href="/2023/09/12/Centos%E5%AE%89%E8%A3%85NFS%E5%AD%98%E5%82%A8(k8s)/" title="">
+                        <span class="hidden-mobile"></span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

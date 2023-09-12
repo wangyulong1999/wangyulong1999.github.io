@@ -1,0 +1,750 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="yulong">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title:Ubuntu22.04LTS  安装 ceph 集群Ubuntu22.04LTS  安装 ceph 集群 在 Ubuntu 22.04 使用 cephadm(容器部署) 安装 ceph 集群，并配置为 k8s 的存储类。  ceph官方地址：  Welcome to Ceph — Ceph Documentation  端口说明(tcp协议)：    服务 端口 说明    mon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="yulong">
+<meta property="og:url" content="http://example.com/2023/09/12/Ubuntu22.04LTS%20%20%E5%AE%89%E8%A3%85%20ceph%20%E9%9B%86%E7%BE%A4/index.html">
+<meta property="og:site_name" content="yulong">
+<meta property="og:description" content="title:Ubuntu22.04LTS  安装 ceph 集群Ubuntu22.04LTS  安装 ceph 集群 在 Ubuntu 22.04 使用 cephadm(容器部署) 安装 ceph 集群，并配置为 k8s 的存储类。  ceph官方地址：  Welcome to Ceph — Ceph Documentation  端口说明(tcp协议)：    服务 端口 说明    mon">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-09-12T03:04:27.100Z">
+<meta property="article:modified_time" content="2023-09-12T03:05:08.211Z">
+<meta property="article:author" content="yulong">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>yulong</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/shubiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/toubudaziji.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/gundongtiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/bynotes/texiao/source/css/shubiao.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-09-12 11:04" pubdate>
+          2023年9月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          19k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          156 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-Ubuntu22-04LTS-安装-ceph-集群"><a href="#title-Ubuntu22-04LTS-安装-ceph-集群" class="headerlink" title="title:Ubuntu22.04LTS  安装 ceph 集群"></a>title:Ubuntu22.04LTS  安装 ceph 集群</h2><h1 id="Ubuntu22-04LTS-安装-ceph-集群"><a href="#Ubuntu22-04LTS-安装-ceph-集群" class="headerlink" title="Ubuntu22.04LTS  安装 ceph 集群"></a>Ubuntu22.04LTS  安装 ceph 集群</h1><p> 在 Ubuntu 22.04 使用 cephadm(容器部署) 安装 ceph 集群，并配置为 k8s 的存储类。 </p>
+<p><strong>ceph官方地址</strong>：  <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/">Welcome to Ceph — Ceph Documentation</a> </p>
+<p><strong>端口说明(tcp协议)：</strong></p>
+<table>
+<thead>
+<tr>
+<th>服务</th>
+<th>端口</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>mon</td>
+<td>6789</td>
+<td>ceph集群互通，k8s集群互通</td>
+</tr>
+<tr>
+<td>osd</td>
+<td>6800-7300</td>
+<td>osd守护进程端口</td>
+</tr>
+<tr>
+<td>mgr</td>
+<td>8443、9283</td>
+<td>8443(web服务) 9283(prometheus metrics)</td>
+</tr>
+<tr>
+<td>prometheus</td>
+<td>9095</td>
+<td></td>
+</tr>
+<tr>
+<td>grafana</td>
+<td>3000</td>
+<td></td>
+</tr>
+<tr>
+<td>node-exporter</td>
+<td>9100</td>
+<td></td>
+</tr>
+<tr>
+<td>alertmanager</td>
+<td>9093</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="一、准备"><a href="#一、准备" class="headerlink" title="一、准备"></a><strong>一、准备</strong></h3><h4 id="1、-准备-3-台服务器用于安装-ceph-集群，服务器信息如下："><a href="#1、-准备-3-台服务器用于安装-ceph-集群，服务器信息如下：" class="headerlink" title="1、 准备 3 台服务器用于安装 ceph 集群，服务器信息如下："></a><strong>1、 准备 3 台服务器用于安装 ceph 集群，服务器信息如下：</strong></h4><table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>IP</th>
+<th>配置</th>
+<th>磁盘</th>
+<th>服务</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ceph-node1</td>
+<td>10.0.51.215</td>
+<td>1 vCPU；2 GiB</td>
+<td>系统盘 20G + 数据盘 50G</td>
+<td>mon、osd，mgr、prometheus、grafana、node-expoter</td>
+</tr>
+<tr>
+<td>ceph-node2</td>
+<td>10.0.51.216</td>
+<td>1 vCPU；2 GiB</td>
+<td>系统盘 20G + 数据盘 50G</td>
+<td>mon、osd，mgr、node-expoter</td>
+</tr>
+<tr>
+<td>ceph-node3</td>
+<td>10.0.51.217</td>
+<td>1 vCPU；2 GiB</td>
+<td>系统盘 20G + 数据盘 50G</td>
+<td>mon、osd、node-expoter</td>
+</tr>
+</tbody></table>
+<h4 id="2、修改主机host文件-每台主机都执行"><a href="#2、修改主机host文件-每台主机都执行" class="headerlink" title="2、修改主机host文件(每台主机都执行)"></a><strong>2、修改主机host文件(每台主机都执行)</strong></h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs Bash">root@ceph-node1:~<span class="hljs-comment"># cat /etc/hosts</span><br>127.0.0.1 localhost<br>127.0.1.1 ubuntu<br><br><span class="hljs-comment"># The following lines are desirable for IPv6 capable hosts</span><br>::1     ip6-localhost ip6-loopback<br>fe00::0 ip6-localnet<br>ff00::0 ip6-mcastprefix<br>ff02::1 ip6-allnodes<br>ff02::2 ip6-allrouters<br><br>10.0.51.215 ceph-node1<br>10.0.51.216 ceph-node2<br>10.0.51.217 ceph-node3<br></code></pre></td></tr></table></figure>
+
+<h4 id="3、修改主机hostname-每台主机都执行"><a href="#3、修改主机hostname-每台主机都执行" class="headerlink" title="3、修改主机hostname(每台主机都执行)"></a><strong>3、修改主机hostname(每台主机都执行)</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">10.0.51.215</span><br>hostnamectl set-hostname  ceph-node1<br><span class="hljs-meta prompt_"># </span><span class="language-bash">10.0.51.216</span><br>hostnamectl set-hostname  ceph-node2<br><span class="hljs-meta prompt_"># </span><span class="language-bash">10.0.51.217</span><br>hostnamectl set-hostname  ceph-node3<br></code></pre></td></tr></table></figure>
+
+<h4 id="4、密钥分发-第一台主机执行"><a href="#4、密钥分发-第一台主机执行" class="headerlink" title="4、密钥分发(第一台主机执行)"></a><strong>4、密钥分发(第一台主机执行)</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">ceph-node1创建密钥</span><br>ssh-keygen -t rsa<br><span class="hljs-meta prompt_">#</span><span class="language-bash">修改配置</span><br>sed -i &#x27;s/PermitRootLogin yes/#PermitRootLogin yes/g&#x27; /etc/ssh/sshd_config<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">发送</span><br>ssh-copy-id  ceph-node1<br>ssh-copy-id  ceph-node2<br>ssh-copy-id  ceph-node3<br></code></pre></td></tr></table></figure>
+
+<h4 id="5、时间同步"><a href="#5、时间同步" class="headerlink" title="5、时间同步"></a><strong>5、时间同步</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">设置时区 Asia/Shanghai</span><br>timedatectl set-timezone Asia/Shanghai<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看状态</span><br>timedatectl status<br></code></pre></td></tr></table></figure>
+
+<h4 id="6、安装docker"><a href="#6、安装docker" class="headerlink" title="6、安装docker"></a><strong>6、安装docker</strong></h4><p># 在线安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 下载依赖</span></span><br><br>apt-get update<br>apt-get -y install apt-transport-https ca-certificates curl gnupg-agent software-properties-common<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 导入key</span></span><br>curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 导入源</span></span><br>add-apt-repository &quot;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable&quot;<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 安装</span></span><br>apt-get -y install docker-ce<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 添加daemon.json</span></span><br>&#123;<br>    &quot;registry-mirrors&quot;: [&quot;https://obou6wyb.mirror.aliyuncs.com&quot;],<br>    &quot;log-driver&quot;:&quot;json-file&quot;,<br>    &quot;log-opts&quot;:&#123;&quot;max-size&quot; :&quot;100m&quot;,&quot;max-file&quot;:&quot;1&quot;&#125;,<br>    &quot;insecure-registries&quot;:[&quot;harbor.ops.bsnbase.com&quot;]<br>&#125;<br><span class="hljs-meta prompt_"># </span><span class="language-bash">启动并设置开机自启动</span><br>systemctl enable --now docker<br><br>root@ceph-node1:~# docker -v<br>Docker version 24.0.2, build cb74dfc<br></code></pre></td></tr></table></figure>
+
+<p># 离线安装</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Shell">https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-24.0.2.tgz<br><br>tar zxf docker-24.0.2.tgz<br>cp docker/* /usr/bin/<br><span class="hljs-meta prompt_"># </span><span class="language-bash">拷贝 docker.service、daemon.json</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">启动</span><br></code></pre></td></tr></table></figure>
+
+<h4 id="7、下载cephadm离线包"><a href="#7、下载cephadm离线包" class="headerlink" title="7、下载cephadm离线包"></a><strong>7、下载cephadm离线包</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">ubuntu22.04默认装有ceph17.2.5的源</span><br>apt update<br>apt-get -y --download-only install -d -o=dir::cache=./ cephadm ceph-common<br>.<br>├── archives<br>│   ├── cephadm_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>│   ├── ceph-common相关包<br>│   ├── lock<br>│   └── partial<br>├── pkgcache.bin<br>└── srcpkgcache.bin<br></code></pre></td></tr></table></figure>
+
+<h3 id="二、部署"><a href="#二、部署" class="headerlink" title="二、部署"></a><strong>二、部署</strong></h3><p>cephadm部署文档地址: <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/cephadm/install/#cephadm-deploying-new-cluster">https://docs.ceph.com/en/latest/cephadm/install/#cephadm-deploying-new-cluster</a></p>
+<h4 id="1、在线安装"><a href="#1、在线安装" class="headerlink" title="1、在线安装"></a><strong>1、在线安装</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">安装 cephadm</span><br>apt install cephadm -y<br><span class="hljs-meta prompt_"># </span><span class="language-bash">启用集群</span><br>cephadm bootstrap --mon-ip 10.0.51.215 --initial-dashboard-user admin --initial-dashboard-password 123456 <br><span class="hljs-meta prompt_"># </span><span class="language-bash">安装 ceph-cli</span><br>apt install ceph-common -y<br><span class="hljs-meta prompt_"># </span><span class="language-bash">集群状态信息</span><br>ceph -s<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看节点信息</span><br>ceph orch host ls<br><span class="hljs-meta prompt_"># </span><span class="language-bash">拷贝公钥</span><br>ssh-copy-id -f -i /etc/ceph/ceph.pub ceph-node2<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加节点</span><br>ceph orch host add ceph-node2<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看节点信息</span><br>ceph orch host ls<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加所有可用磁盘到集群(磁盘需裸盘挂载，不做任何操作，不需要格式化)</span><br>ceph orch daemon add osd ceph-node1:/dev/sdb<br>ceph orch daemon add osd ceph-node2:/dev/sdb<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看 osd 状态</span><br>ceph osd tree<br></code></pre></td></tr></table></figure>
+
+<h4 id="2、离线安装"><a href="#2、离线安装" class="headerlink" title="2、离线安装"></a><strong>2、离线安装</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">集群第一台主机拷贝之前下载的deb包</span><br>root@ceph-node1:/bsn/iso<br><br>-rw-r--r-- 1 root root 22579388 May 10 00:09 ceph-common_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root    89502 May 10 00:09 cephadm_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root   340678 Jan 28  2022 ibverbs-providers_39.0-1_amd64.deb<br>-rw-r--r-- 1 root root   160172 Mar 17  2022 libbabeltrace1_1.5.8-2build1_amd64.deb<br>-rw-r--r-- 1 root root   222588 Mar 17  2022 libboost-context1.74.0_1.74.0-14ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root   264432 Mar 17  2022 libboost-filesystem1.74.0_1.74.0-14ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root   245050 Mar 17  2022 libboost-iostreams1.74.0_1.74.0-14ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root   310732 Mar 17  2022 libboost-program-options1.74.0_1.74.0-14ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root   261992 Mar 17  2022 libboost-thread1.74.0_1.74.0-14ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root   744378 May 10 00:09 libcephfs2_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root    19806 Jan 25  2022 libdaxctl1_72.1-1_amd64.deb<br>-rw-r--r-- 1 root root   212402 Mar 24  2022 libgoogle-perftools4_2.9.1-0ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root    69304 Jan 28  2022 libibverbs1_39.0-1_amd64.deb<br>-rw-r--r-- 1 root root   140026 Mar 25  2022 liblua5.3-0_5.3.6-1build1_amd64.deb<br>-rw-r--r-- 1 root root    57676 Jan 25  2022 libndctl6_72.1-1_amd64.deb<br>-rw-r--r-- 1 root root    59070 Feb  9  2022 libnl-3-200_3.5.0-0.1_amd64.deb<br>-rw-r--r-- 1 root root   179554 Feb  9  2022 libnl-route-3-200_3.5.0-0.1_amd64.deb<br>-rw-r--r-- 1 root root    22478 Mar 25  2022 libnuma1_2.0.14-3ubuntu2_amd64.deb<br>-rw-r--r-- 1 root root    41108 Mar 25  2022 liboath0_2.6.7-3build1_amd64.deb<br>-rw-r--r-- 1 root root    81392 Mar 25  2022 libpmem1_1.11.1-3build1_amd64.deb<br>-rw-r--r-- 1 root root   123994 Mar 25  2022 libpmemobj1_1.11.1-3build1_amd64.deb<br>-rw-r--r-- 1 root root    39340 Mar 17  2022 librabbitmq4_0.10.0-1ubuntu2_amd64.deb<br>-rw-r--r-- 1 root root  3573064 May 10 00:09 librados2_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root   492352 May 10 00:09 libradosstriper1_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root  3545306 May 10 00:09 librbd1_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root    71226 Jan 28  2022 librdmacm1_39.0-1_amd64.deb<br>-rw-r--r-- 1 root root    17486 Mar 26  2022 libsnappy1v5_1.1.8-1build3_amd64.deb<br>-rw-r--r-- 1 root root    98202 Mar 24  2022 libtcmalloc-minimal4_2.9.1-0ubuntu3_amd64.deb<br>-rw-r--r-- 1 root root    34568 May 10 00:09 python3-ceph-argparse_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root    55718 May 10 00:09 python3-ceph-common_17.2.5-0ubuntu0.22.04.3_all.deb<br>-rw-r--r-- 1 root root   174018 May 10 00:09 python3-cephfs_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root    31318 Feb 15  2022 python3-prettytable_2.5.0-2_all.deb<br>-rw-r--r-- 1 root root   354232 May 10 00:09 python3-rados_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root   323690 May 10 00:09 python3-rbd_17.2.5-0ubuntu0.22.04.3_amd64.deb<br>-rw-r--r-- 1 root root    21924 Jan 28  2022 python3-wcwidth_0.2.5+dfsg1-1_all.deb<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">离线安装</span><br>root@ceph-node1:/bsn/iso# dpkg -i *.deb<br><span class="hljs-meta prompt_"># </span><span class="language-bash">检查</span><br>root@ceph-node1:~# dpkg --list |grep ceph<br>ii  ceph-common                           17.2.5-0ubuntu0.22.04.3                 amd64        common utilities to mount and interact with a ceph storage cluster<br>ii  cephadm                               17.2.5-0ubuntu0.22.04.3                 amd64        cephadm utility to bootstrap ceph daemons with systemd and containers<br>ii  libcephfs2                            17.2.5-0ubuntu0.22.04.3                 amd64        Ceph distributed file system client library<br>ii  python3-ceph-argparse                 17.2.5-0ubuntu0.22.04.3                 amd64        Python 3 utility libraries for Ceph CLI<br>ii  python3-ceph-common                   17.2.5-0ubuntu0.22.04.3                 all          Python 3 utility libraries for Ceph<br>ii  python3-cephfs                        17.2.5-0ubuntu0.22.04.3                 amd64        Python 3 libraries for the Ceph libcephfs library<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">cephadm安装</span><br>cephadm --image &lt;ceph镜像地址&gt; bootstrap --mon-ip &lt;mon_ip&gt;  --initial-dashboard-user admin --initial-dashboard-password &lt;passwd&gt; --config &lt;init.conf&gt;<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># init-ceph.conf 添加监控本地镜像地址</span></span><br>cat &gt;&gt;init-ceph.conf &lt;&lt;EOF<br>[mgr]<br>mgr/cephadm/container_image_prometheus = harbor.ops.bsnbase.com/ceph/prometheus:v2.33.4<br>mgr/cephadm/container_image_node_exporter = harbor.ops.bsnbase.com/ceph/node-exporter:v1.3.1<br>mgr/cephadm/container_image_grafana = harbor.ops.bsnbase.com/ceph/ceph-grafana:8.3.5<br>mgr/cephadm/container_image_alertmanager = harbor.ops.bsnbase.com/ceph/alertmanager:v0.23.0<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 启动</span></span><br>root@ceph-node1:~# cephadm --image harbor.ops.bsnbase.com/ceph/ceph:v17  bootstrap --mon-ip 10.0.51.215 --config init-ceph.conf<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">集群状态信息</span><br>ceph -s<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看节点信息</span><br>ceph orch host ls<br><span class="hljs-meta prompt_"># </span><span class="language-bash">拷贝公钥</span><br>ssh-copy-id -f -i /etc/ceph/ceph.pub ceph-node2<br>ssh-copy-id -f -i /etc/ceph/ceph.pub ceph-node3<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加节点</span><br>ceph orch host add ceph-node2<br>ceph orch host add ceph-node3<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看节点信息</span><br>ceph orch host ls<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加所有可用磁盘到集群(磁盘需裸盘挂载，不做任何操作，不需要格式化)</span><br>ceph orch daemon add osd ceph-node1:/dev/sdb<br>ceph orch daemon add osd ceph-node2:/dev/sdb<br>ceph orch daemon add osd ceph-node3:/dev/sdb<br></code></pre></td></tr></table></figure>
+
+<h3 id="三、kubernetes安装csi"><a href="#三、kubernetes安装csi" class="headerlink" title="三、kubernetes安装csi"></a><strong>三、kubernetes安装csi</strong></h3><h4 id="官方地址以及版本推荐"><a href="#官方地址以及版本推荐" class="headerlink" title="官方地址以及版本推荐"></a><strong>官方地址以及版本推荐</strong></h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">参考官方csi适配的kubenetes版本</span><br>https://github.com/ceph/ceph-csi/<br><br>Ceph CSI Version    Container Orchestrator Name Version Tested<br>v3.6.1  Kubernetes  v1.21, v1.22, v1.23<br>v3.6.0  Kubernetes  v1.21, v1.22, v1.23<br>v3.5.1  Kubernetes  v1.21, v1.22, v1.23<br>v3.5.0  Kubernetes  v1.21, v1.22, v1.23<br>v3.4.0  Kubernetes  v1.20, v1.21, v1.22<br></code></pre></td></tr></table></figure>
+
+<p> ceph为k8s提供存储服务主要有两种方式，cephfs和ceph rdb；cephfs方式支持k8s的pv的3种访问模式<code>ReadWriteOnce，ReadOnlyMany，ReadWriteMany</code> ，RBD支持<code>ReadWriteOnce，ReadOnlyMany</code>。 </p>
+<h4 id="1、使用rbd-不建议使用"><a href="#1、使用rbd-不建议使用" class="headerlink" title="1、使用rbd(不建议使用)"></a><strong>1、使用rbd(不建议使用)</strong></h4><h5 id="1-1、ceph集群创建pool"><a href="#1-1、ceph集群创建pool" class="headerlink" title="1.1、ceph集群创建pool"></a><strong>1.1、ceph集群创建pool</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 创建名称为 kubernetes pool</span></span><br>ceph osd pool create kubernetes 200<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 初始化 kubernetes poll</span></span><br>rbd poll init kubernetes<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment">## 输出</span></span><br>[client.kubernetes]<br>    key = AQB7aHVk54mYCRAAkXsflBVWU3GGcbgsFlDS1Q==<br>    <br><span class="hljs-meta prompt_">#</span><span class="language-bash">创建k8s访问ceph的用户，在ceph的admin或者mon节点</span><br>ceph auth get-or-create client.kubernetes mon &#x27;allow r&#x27; osd &#x27;allow class-read object_prefix rbd_children, allow rwx pool=kubernetes&#x27; -o ceph.client.kubernetes.keyring<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看key，在ceph的admin或者mon节点</span><br>ceph auth get-key client.admin<br>ceph auth get-key client.kubernetes<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">csi使用的权限使用默认的admin用户，也可以创建新的用户</span><br>[root@ceph1 ~]# cat /etc/ceph/ceph.client.admin.keyring <br>[client.admin]<br>    key = AQB+ialiIn9dDRAAWFOCHqc+2QYHIx9NwWvKmA==<br>    caps mds = &quot;allow *&quot;<br>    caps mgr = &quot;allow *&quot;<br>    caps mon = &quot;allow *&quot;<br>    caps osd = &quot;allow *&quot;    <br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">获取cephfs集群clusterid</span><br>root@ceph-node1:~# ceph -s<br>  cluster:<br>    id:     bcccd25c-fdc8-11ed-ae63-000c29be755f<br>    health: HEALTH_WARN<br>            clock skew detected on mon.ceph-node2<br> <br>  services:<br>    mon: 3 daemons, quorum ceph-node1,ceph-node2,ceph-node3 (age 10h)<br>    mgr: ceph-node1.hleyvm(active, since 2d), standbys: ceph-node2.qacter<br>    mds: 1/1 daemons up, 1 standby<br>    osd: 3 osds: 3 up (since 2d), 3 in (since 2d)<br> <br>  data:<br>    volumes: 1/1 healthy<br>    pools:   3 pools, 49 pgs<br>    objects: 26 objects, 708 KiB<br>    usage:   91 MiB used, 900 GiB / 900 GiB avail<br>    pgs:     49 active+clean<br></code></pre></td></tr></table></figure>
+
+<h5 id="1-2、ceph-csi配置文件"><a href="#1-2、ceph-csi配置文件" class="headerlink" title="1.2、ceph-csi配置文件"></a><strong>1.2、ceph-csi配置文件</strong></h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">下载github文件,切换分支符合k8s版本</span><br>https://github.com/ceph/ceph-csi/tree/devel/deploy/rbd/kubernetes<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">修改csi-config-map.yaml文件 增加ceph集群配置</span><br><br>cat &gt;&gt; csi-config-map.yaml &lt;&lt; EOF<br>---<br>apiVersion: v1<br>kind: ConfigMap<br>data:<br>  config.json: |-<br>    [<br>      &#123;<br>        &quot;clusterID&quot;: &quot;bcccd25c-fdc8-11ed-ae63-000c29be755f&quot;,<br>        &quot;monitors&quot;: [<br>          &quot;10.0.51.215:6789&quot;,<br>          &quot;10.0.51.216:6789&quot;,<br>          &quot;10.0.51.217:6789&quot;<br>         ]<br>       &#125;<br>     ]<br>metadata:<br>  name: ceph-csi-config<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建csi-kms-config-map.yaml (这个文件是空的但是必须有，要不然服务启动会报错)</span><br>cat &gt;&gt; csi-kms-config-map.yaml &lt;&lt;EOF<br>---<br>apiVersion: v1<br>kind: ConfigMap<br>data:<br>  config.json: |-<br>    &#123;&#125;<br>metadata:<br>  name: ceph-csi-encryption-kms-config<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建ceph-config-map.yaml</span><br>cat &gt;&gt; ceph-config-map.yaml &lt;&lt;EOF<br>---<br>apiVersion: v1<br>kind: ConfigMap<br>data:<br>  ceph.conf: |<br>    [global]<br>    auth_cluster_required = cephx<br>    auth_service_required = cephx<br>    auth_client_required = cephx<br><br><span class="hljs-meta prompt_">   # </span><span class="language-bash">keyring is a required key and its value should be empty</span><br>  keyring: |<br>metadata:<br>  name: ceph-config<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建csi-rbd-secret.yaml</span><br>cat &gt;&gt; csi-rbd-secret.yaml &lt;&lt; EOF<br>---<br>apiVersion: v1<br>kind: Secret<br>metadata:<br>  name: csi-rbd-secret<br>  namespace: default<br>stringData:<br>  userID: kubernetes<br>  userKey: AQDpuN1jIlPBABAAaGhYtIUSonIiHirrM9SFkQ==<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建cefs-StorageClass.yaml</span><br>cat &gt;&gt; ceph-StorageClass.yaml &lt;&lt; EOF<br>---<br>apiVersion: storage.k8s.io/v1<br>kind: StorageClass<br>metadata:<br>   name: csi-rbd-sc<br>   annotations:<br>     storageclass.beta.kubernetes.io/is-default-class: &quot;true&quot;<br>     storageclass.kubesphere.io/supported-access-modes: &#x27;[&quot;ReadWriteOnce&quot;,&quot;ReadOnlyMany&quot;,&quot;ReadWriteMany&quot;]&#x27;<br>provisioner: rbd.csi.ceph.com<br>parameters:<br>   clusterID: &quot;bcccd25c-fdc8-11ed-ae63-000c29be755f&quot;<br>   pool: &quot;kubernetes&quot;    # &lt;--ToBeReplaced--&gt;<br>   imageFeatures: layering<br>   csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret<br>   csi.storage.k8s.io/provisioner-secret-namespace: default<br>   csi.storage.k8s.io/controller-expand-secret-name: csi-rbd-secret<br>   csi.storage.k8s.io/controller-expand-secret-namespace: default<br>   csi.storage.k8s.io/node-stage-secret-name: csi-rbd-secret<br>   csi.storage.k8s.io/node-stage-secret-namespace: default<br><span class="hljs-meta prompt_">   #</span><span class="language-bash">csi.storage.k8s.io/fstype: ext4</span><br>reclaimPolicy: Delete<br>allowVolumeExpansion: true<br>mountOptions:<br>   - discard<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">其他文件展示(不需要修改)</span><br>[root@master kubernetes]# ll<br>总用量 56<br>-rw-r--r-- 1 root root  273 5月  30 14:02 ceph-configmap.yaml<br>-rw-r--r-- 1 root root  925 5月  30 15:51 ceph-StorageClass.yaml<br>-rw-r--r-- 1 root root  299 5月  30 14:02 csi-config-map.yaml<br>-rw-r--r-- 1 root root  226 5月  30 14:02 csidriver.yaml<br>-rw-r--r-- 1 root root  111 5月  30 14:11 csi-kms-config-map.yaml<br>-rw-r--r-- 1 root root 1740 5月  30 14:02 csi-nodeplugin-psp.yaml<br>-rw-r--r-- 1 root root 1110 5月  30 14:02 csi-nodeplugin-rbac.yaml<br>-rw-r--r-- 1 root root 1312 5月  30 14:02 csi-provisioner-psp.yaml<br>-rw-r--r-- 1 root root 3116 5月  30 14:02 csi-provisioner-rbac.yaml<br>-rw-r--r-- 1 root root 7471 5月  30 14:02 csi-rbdplugin-provisioner.yaml<br>-rw-r--r-- 1 root root 6397 5月  30 14:02 csi-rbdplugin.yaml<br>-rw-r--r-- 1 root root  195 5月  30 14:02 css-rbd-secret.yaml<br></code></pre></td></tr></table></figure>
+
+<h4 id="2、使用cephfs"><a href="#2、使用cephfs" class="headerlink" title="2、使用cephfs"></a><strong>2、使用cephfs</strong></h4><p>Ceph文件系统： <a target="_blank" rel="noopener" href="https://docs.ceph.com/en/latest/cephfs/">https://docs.ceph.com/en/latest/cephfs/</a></p>
+<h5 id="2-1、创建cephfs"><a href="#2-1、创建cephfs" class="headerlink" title="2.1、创建cephfs"></a><strong>2.1、创建cephfs</strong></h5><p> 对于大多数 Ceph 部署，设置第一个 CephFS 文件系统非常简单： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">创建cepfs系统 会去启动一个mds容器</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">ceph fs volume create &lt;cephfs_name&gt;</span><br>root@ceph-node1:~# ceph fs volume create cephfs<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看pool</span><br>root@ceph-node1:~# ceph osd pool ls<br>.mgr<br>cephfs.cephfs.meta<br>cephfs.cephfs.data<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看mds</span><br>root@ceph-node1:~# ceph mds stat<br>cephfs:1 &#123;0=cephfs.ceph-node3.jrkixp=up:active&#125; 1 up:standby<br>root@ceph-node1:~# ceph fs ls<br>name: cephfs, metadata pool: cephfs.cephfs.meta, data pools: [cephfs.cephfs.data ]<br>root@ceph-node1:~# ceph fs get cephfs<br>Filesystem &#x27;cephfs&#x27; (1)<br>fs_name cephfs<br>epoch   5<br>flags   12 joinable allow_snaps allow_multimds_snaps<br>created 2023-06-02T09:21:35.082813+0000<br>modified    2023-06-02T09:21:47.056959+0000<br>tableserver 0<br>root    0<br>session_timeout 60<br>session_autoclose   300<br>max_file_size   1099511627776<br>required_client_features    &#123;&#125;<br>last_failure    0<br>last_failure_osd_epoch  0<br>compat  compat=&#123;&#125;,rocompat=&#123;&#125;,incompat=&#123;1=base v0.20,2=client writeable ranges,3=default file layouts on dirs,4=dir inode in separate object,5=mds uses versioned encoding,6=dirfrag is stored in omap,7=mds uses inline data,8=no anchor table,9=file layout v2,10=snaprealm v2&#125;<br>max_mds 1<br>in  0<br>up  &#123;0=34145&#125;<br>failed  <br>damaged <br>stopped <br>data_pools  [3]<br>metadata_pool   2<br>inline_data disabled<br>balancer    <br>standby_count_wanted    1<br>[mds.cephfs.ceph-node3.jrkixp&#123;0:34145&#125; state up:active seq 2 join_fscid=1 addr [v2:10.0.51.217:6808/185298052,v1:10.0.51.217:6809/185298052] compat &#123;c=[1],r=[1],i=[7ff]&#125;]<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">强制 mds 处于失败状态</span><br>ceph fs fail &lt;fs_name&gt;  <br><span class="hljs-meta prompt_"># </span><span class="language-bash">删除非活动的 mds</span><br>ceph fs rm &lt;fs_name&gt; <br></code></pre></td></tr></table></figure>
+
+<h5 id="2-2、用户管理"><a href="#2-2、用户管理" class="headerlink" title="2.2、用户管理"></a><strong>2.2、用户管理</strong></h5><p>Ceph 把数据以对象的形式存于各存储池中。Ceph 用户必须具有访问存储池的权限才能够读写数据。另外，Ceph 用户必须具有执行权限才能够使用 Ceph 的管理命令。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 查看所有用户信息</span></span><br>root@ceph-node1:~# ceph auth list<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 获取所有用户的key与权限相关信息</span></span><br>root@ceph-node1:~# ceph auth get client.admin<br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 如果只需要某个用户的key信息，可以使用pring-key子命令</span></span><br>root@ceph-node1:~# ceph auth print-key client.admin<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">csi使用的权限使用默认的admin用户，也可以创建新的用户</span><br>root@ceph-node1:~# ceph auth get client.admin<br>[client.admin]<br>    key = AQB+n5Jke4W9HxAA52X3NMhpDXO69ytb4ex8ow==<br>    caps mds = &quot;allow *&quot;<br>    caps mgr = &quot;allow *&quot;<br>    caps mon = &quot;allow *&quot;<br>    caps osd = &quot;allow *&quot;<br><br>root@ceph-node1:~# cat /etc/ceph/ceph.client.admin.keyring <br>[client.admin]<br>    key = AQB+n5Jke4W9HxAA52X3NMhpDXO69ytb4ex8ow==<br>    caps mds = &quot;allow *&quot;<br>    caps mgr = &quot;allow *&quot;<br>    caps mon = &quot;allow *&quot;<br>    caps osd = &quot;allow *&quot;<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-3、ceph-csi配置"><a href="#2-3、ceph-csi配置" class="headerlink" title="2.3、ceph-csi配置"></a><strong>2.3、ceph-csi配置</strong></h5><p>GitHub地址：<a target="_blank" rel="noopener" href="https://github.com/ceph/ceph-csi/tree/devel/deploy/cephfs/kubernetes">https://github.com/ceph/ceph-csi/tree/devel/deploy/cephfs/kubernetes</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">官方yaml信息</span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">下载包文件</span><br>git clone https://github.com/ceph/ceph-csi/tree/devel/deploy/cephfs/kubernetes<br><br>[root@master kubernetes]# ll<br>总用量 48<br>-rw-r--r-- 1 root root 5831 5月  31 13:40 csi-cephfsplugin-provisioner.yaml<br>-rw-r--r-- 1 root root 5704 5月  31 13:40 csi-cephfsplugin.yaml<br>-rw-r--r-- 1 root root  229 5月  31 13:40 csidriver.yaml<br>-rw-r--r-- 1 root root 1761 5月  31 13:40 csi-nodeplugin-psp.yaml<br>-rw-r--r-- 1 root root  551 5月  31 13:40 csi-nodeplugin-rbac.yaml<br>-rw-r--r-- 1 root root 1330 5月  31 13:40 csi-provisioner-psp.yaml<br>-rw-r--r-- 1 root root 2898 5月  31 13:40 csi-provisioner-rbac.yaml<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建ceph集群节点信息</span><br>cat &gt;&gt;csi-config-map.yaml &lt;&lt; EOF<br>---<br>apiVersion: v1<br>kind: ConfigMap<br>data:<br>  config.json: |-<br>    [<br>      &#123;<br>        &quot;clusterID&quot;: &quot;ae072378-0118-11ee-8a3e-65e3cff01826&quot;,<br>        &quot;monitors&quot;: [<br>          &quot;10.0.51.215:6789&quot;,<br>          &quot;10.0.51.216:6789&quot;,<br>          &quot;10.0.51.217:6789&quot;<br>         ]<br>       &#125;<br>    ]<br>metadata:<br>  name: ceph-csi-config<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建连接ceph集群screct</span><br>cat &gt;&gt; css-cephfs-secret.yaml &lt;&lt; EOF<br>---<br>kind: Secret<br>apiVersion: v1<br>metadata:<br>  name: csi-cephfs-secret<br>  namespace: default<br>stringData:<br>  userID: admin  <br>  userKey: &quot;AQB+n5Jke4W9HxAA52X3NMhpDXO69ytb4ex8ow==&quot;<br>  adminID: admin  <br>  adminKey: &quot;AQB+n5Jke4W9HxAA52X3NMhpDXO69ytb4ex8ow==&quot;<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">创建ceph-StorageClass.yaml</span><br>cat &gt;&gt; ceph-StorageClass.yaml &lt;&lt;EOF<br>---<br>apiVersion: storage.k8s.io/v1<br>kind: StorageClass<br>metadata:<br>   name: cephfs<br>   annotations:<br>     storageclass.beta.kubernetes.io/is-default-class: &quot;true&quot;<br>     storageclass.kubesphere.io/supported-access-modes: &#x27;[&quot;ReadWriteOnce&quot;,&quot;ReadOnlyMany&quot;,&quot;ReadWriteMany&quot;]&#x27;<br>provisioner: cephfs.csi.ceph.com<br><span class="hljs-meta prompt_">#</span><span class="language-bash">provisioner: ceph.com/cephfs</span><br>parameters:<br>   clusterID: &quot;ae072378-0118-11ee-8a3e-65e3cff01826&quot;<br>   fsName: &quot;cephfs&quot;<br>   pool: &quot;cephfs.cephfs.data&quot;    # cepfs数据name<br><span class="hljs-meta prompt_">   #</span><span class="language-bash">rootPath: /test</span><br>   csi.storage.k8s.io/provisioner-secret-name: csi-cephfs-secret<br>   csi.storage.k8s.io/provisioner-secret-namespace: default<br>   csi.storage.k8s.io/controller-expand-secret-name: csi-cephfs-secret<br>   csi.storage.k8s.io/controller-expand-secret-namespace: default<br>   csi.storage.k8s.io/node-stage-secret-name: csi-cephfs-secret<br>   csi.storage.k8s.io/node-stage-secret-namespace: default<br><span class="hljs-meta prompt_">   #</span><span class="language-bash">csi.storage.k8s.io/fstype: ext4</span><br>reclaimPolicy: Delete<br>allowVolumeExpansion: true<br>mountOptions:<br>   - discard<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 国内镜像没法拉取 可以提前拉取修改文件镜像地址 (csi-cephfsplugin-provisioner.yaml、csi-cephfsplugin.yaml)</span></span><br>sed -i &#x27;/k8s.gcr.io\/sig-storage/harbor.ops.bsnbase.com\/ceph/g&#x27;  ./*<br>sed -i &#x27;/quay.io\/cephcsi/harbor.ops.bsnbase.com\/ceph/g&#x27; ./*<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 启动</span></span><br>[root@master kubernetes]# kubectl apply -f .<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># 查看</span></span><br>[root@master ~]# kubectl get pod <br>NAME                                            READY   STATUS    RESTARTS   AGE<br>csi-cephfsplugin-4wzm5                          3/3     Running   0          30m<br>csi-cephfsplugin-gbf5s                          3/3     Running   0          30m<br>csi-cephfsplugin-l9qhg                          3/3     Running   0          30m<br>csi-cephfsplugin-provisioner-67fb594df9-87ssb   6/6     Running   0          30m<br>csi-cephfsplugin-provisioner-67fb594df9-rdtsf   6/6     Running   0          30m<br>csi-cephfsplugin-provisioner-67fb594df9-z26dp   6/6     Running   0          30m<br>csi-cephfsplugin-qjbrd                          3/3     Running   0          30m<br>csi-cephfsplugin-v2fdh                          3/3     Running   0          30m<br>[root@master kubernetes]# kubectl get sc<br>NAME                  PROVISIONER               RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE<br>cephfs (default)      cephfs.csi.ceph.com       Delete          Immediate              true                   25m<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_">#</span><span class="language-bash"><span class="hljs-comment"># pvc测试</span></span><br>cat &gt;&gt;cephfs-test.yaml &lt;&lt;EOF<br>apiVersion: v1<br>kind: PersistentVolumeClaim<br>metadata:<br>  name: ceph-test<br>  labels: &#123;&#125;<br>  finalizers:<br>    - kubernetes.io/pvc-protection<br>spec:<br>  accessModes:<br>    - ReadWriteMany<br>  volumeMode: Filesystem<br>  resources:<br>    requests:<br>      storage: 5Gi<br>  storageClassName: cephfs<br>EOF<br></code></pre></td></tr></table></figure>
+
+<h3 id="四、移除cephadm集群-谨慎操作"><a href="#四、移除cephadm集群-谨慎操作" class="headerlink" title="四、移除cephadm集群(谨慎操作)"></a><strong>四、移除cephadm集群(谨慎操作)</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">为了破坏集群并删除该集群中存储的所有数据，请暂停 cephadm 以避免部署新的守护进程</span><br>root@ceph-node1:~# ceph orch pause<br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看集群<span class="hljs-built_in">id</span></span><br>root@ceph-node1:~# ceph fsid<br><span class="hljs-meta prompt_"># </span><span class="language-bash">删除</span><br>root@ceph-node1:~# cephadm rm-cluster --force --zap-osds --fsid &lt;fsid&gt;<br></code></pre></td></tr></table></figure>
+
+<h3 id="ceph运维命令-待更新"><a href="#ceph运维命令-待更新" class="headerlink" title="ceph运维命令(待更新)"></a><strong>ceph运维命令(待更新)</strong></h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs Shell"><span class="hljs-meta prompt_"># </span><span class="language-bash">设置grafanf密码</span><br>cat &gt;&gt; grafana.yaml &lt;&lt;EOF<br>service_type: grafana<br>spec:<br>    initial_admin_password: &lt;grafana_passwd&gt;<br>EOF<br><span class="hljs-meta prompt_"></span><br><span class="hljs-meta prompt_"># </span><span class="language-bash">查看集群配置信息</span><br>ceph config dump<br><span class="hljs-meta prompt_"># </span><span class="language-bash">添加集群配置信息</span><br>ceph config set &lt;value&gt;<br></code></pre></td></tr></table></figure>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2023/09/12/Ubuntu22.04LTS  安装 ceph 集群/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>yulong</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年9月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/09/12/GFS%E6%89%A9%E5%AE%B9%E5%B7%B2%E6%9C%89%E7%9A%84%E5%9C%A8%E7%BA%BF%E7%A3%81%E7%9B%98/" title="GFS扩容在线磁盘">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">GFS扩容在线磁盘</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/12/ubuntu%E5%AE%89%E8%A3%85kubesphere%E9%AB%98%E5%8F%AF%E7%94%A8/" title="Ubuntu安装kubesphere 高可用架构">
+                        <span class="hidden-mobile">Ubuntu安装kubesphere 高可用架构</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="/js/diy/timeDate.js"></script>
+<script src="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/metowolf/Metingjs@1.2/dist/Meting.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/caidai.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxingxing.js"></script>
+<script src="//cdn.jsdelivr.net/gh/bynotes/texiao/source/js/xiaoxuehua.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
